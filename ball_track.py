@@ -7,11 +7,10 @@ me = tello.Tello()
 me.connect()
 print(me.get_battery())
 me.streamon()
-me.takeoff()
-me.send_rc_control(0,0,-25,10)
-print(me.get_current_state())
-time.sleep(10)
-print("DURCH")
+#me.takeoff()
+#me.send_rc_control(0,0,-25,0)
+#print(me.get_current_state())
+#time.sleep(10)
 #Frame größe
 width = 600
 height = 600
@@ -24,29 +23,64 @@ accuracy = 0.3 #genauigkeit was noch mitte ist
 
 
 #Colorcode in HSV
-colorLower = (29, 86, 6)
-colorUpper = (64, 255, 255)
-while True:
-    # Variablen
+colorLower = (27, 80, 182)
+colorUpper = (31, 184, 255)
+
+def trackball(me, center, radius):
     lr = 0
     vr = 0
     hr = 0
     speed = 0
-    print(me.get_current_state())
+    if center[0] > (framecenter[0] + (framecenter[0] * accuracy)):
+        # ball rechts von mitte
+        print("LINKS")
+        lr = -10
+    if center[0] < (framecenter[0] - (framecenter[0] * accuracy)):
+        # ball links von mitte
+        print("RECHTS")
+        lr = 10
+    if center[1] < (framecenter[1] - (framecenter[1] * accuracy)):
+        # ball über mitte
+        print("RUNTER")
+        hr = 10
+    if center[1] > (framecenter[1] + (framecenter[1] * accuracy)):
+        # ball unter mitte
+        print("HOCH")
+        hr = -10
+    if radius < (Abstandradius - (Abstandradius * abstandaccuracy)):
+        # ball bewegt sich weg
+        print("VORWÄRTS")
+        vr = -10
+    if radius > (Abstandradius + (Abstandradius * abstandaccuracy)):
+        # ball bewegt sich auf drohne zu
+        print("RÜCKWÄRTS")
+        vr = 10
+    speed = 10
+    #me.send_rc_control(lr, vr, hr, speed)
+    print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(
+        vr) + "  speed: " + str(speed))
+
+while True:
+    # Variablen
+
+    #print(me.get_current_state())
     frame = me.get_frame_read().frame
     if frame is None:
         break
     # resize the frame, blur it, and convert it to the HSV
     # color space
     frame = imutils.resize(frame, width, height)
-    blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    #blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+    #cv2.imshow("Blurred", blurred)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    cv2.imshow("hsv", hsv)
     #create a mask for the color you want, then perform
     # a series of dilations and erosions to remove any small
     # blobs left in the mask
     mask = cv2.inRange(hsv, colorLower, colorUpper)
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
+    cv2.imshow("mask", mask)
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -68,38 +102,40 @@ while True:
                        (0, 255, 255), 2)
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
         # show the frame to our screen
+        trackball(me,center,radius)
         cv2.imshow("Frame", frame)
-        if center[0] > (framecenter[0]+(framecenter[0]*accuracy)):
-            #ball rechts von mitte
-            print("LINKS")
-            lr = -10
-        if center[0] < (framecenter[0]-(framecenter[0]*accuracy)):
-            # ball links von mitte
-            print("RECHTS")
-            lr = 10
-        if center[1] < (framecenter[1]-(framecenter[1]*accuracy)):
-            # ball über mitte
-            print("RUNTER")
-            hr = 10
-        if center[1] > (framecenter[1]+(framecenter[1]*accuracy)):
-            # ball unter mitte
-            print("HOCH")
-            hr = -10
-        if radius < (Abstandradius-(Abstandradius*abstandaccuracy)):
-            #ball bewegt sich weg
-            print("VORWÄRTS")
-            vr = -10
-        if radius > (Abstandradius+(Abstandradius*abstandaccuracy)):
-            #ball bewegt sich auf drohne zu
-            print("RÜCKWÄRTS")
-            vr = 10
-        speed = 10
-        me.send_rc_control(lr,vr,hr,speed)
-        print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(vr) + "  speed: " + str(speed))
+
+        # if center[0] > (framecenter[0]+(framecenter[0]*accuracy)):
+        #     #ball rechts von mitte
+        #     print("LINKS")
+        #     lr = -10
+        # if center[0] < (framecenter[0]-(framecenter[0]*accuracy)):
+        #     # ball links von mitte
+        #     print("RECHTS")
+        #     lr = 10
+        # if center[1] < (framecenter[1]-(framecenter[1]*accuracy)):
+        #     # ball über mitte
+        #     print("RUNTER")
+        #     hr = 10
+        # if center[1] > (framecenter[1]+(framecenter[1]*accuracy)):
+        #     # ball unter mitte
+        #     print("HOCH")
+        #     hr = -10
+        # if radius < (Abstandradius-(Abstandradius*abstandaccuracy)):
+        #     #ball bewegt sich weg
+        #     print("VORWÄRTS")
+        #     vr = -10
+        # if radius > (Abstandradius+(Abstandradius*abstandaccuracy)):
+        #     #ball bewegt sich auf drohne zu
+        #     print("RÜCKWÄRTS")
+        #     vr = 10
+        # speed = 10
+        # me.send_rc_control(lr,vr,hr,speed)
+        # print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(vr) + "  speed: " + str(speed))
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
-            me.land()
+            #me.land()
             break
     else:
         print("no ball")
