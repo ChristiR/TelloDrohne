@@ -6,21 +6,33 @@ import cv2
 me = tello.Tello()
 me.connect()
 print(me.get_battery())
-me.send_rc_control(0,0,0,0)
-time.sleep(2.2)
 me.streamon()
+me.takeoff()
+me.send_rc_control(0,0,-25,10)
+print(me.get_current_state())
+time.sleep(10)
+print("DURCH")
 #Frame größe
 width = 600
 height = 600
+#einstellungen
 framecenter = (int(width//2), int(height//2))
 Abstandradius = 40
 abstandaccuracy = 0.3 # genauigkeit abstand
 accuracy = 0.3 #genauigkeit was noch mitte ist
 
+
+
 #Colorcode in HSV
 colorLower = (29, 86, 6)
 colorUpper = (64, 255, 255)
 while True:
+    # Variablen
+    lr = 0
+    vr = 0
+    hr = 0
+    speed = 0
+    print(me.get_current_state())
     frame = me.get_frame_read().frame
     if frame is None:
         break
@@ -60,26 +72,31 @@ while True:
         if center[0] > (framecenter[0]+(framecenter[0]*accuracy)):
             #ball rechts von mitte
             print("LINKS")
+            lr = -10
         if center[0] < (framecenter[0]-(framecenter[0]*accuracy)):
             # ball links von mitte
             print("RECHTS")
+            lr = 10
         if center[1] < (framecenter[1]-(framecenter[1]*accuracy)):
             # ball über mitte
             print("RUNTER")
+            hr = 10
         if center[1] > (framecenter[1]+(framecenter[1]*accuracy)):
             # ball unter mitte
             print("HOCH")
+            hr = -10
         if radius < (Abstandradius-(Abstandradius*abstandaccuracy)):
             #ball bewegt sich weg
             print("VORWÄRTS")
+            vr = -10
         if radius > (Abstandradius+(Abstandradius*abstandaccuracy)):
             #ball bewegt sich auf drohne zu
             print("RÜCKWÄRTS")
+            vr = 10
+        speed = 10
+        me.send_rc_control(lr,vr,hr,speed)
+        print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(vr) + "  speed: " + str(speed))
         key = cv2.waitKey(1) & 0xFF
-        if key == ord("s"):
-            me.takeoff()
-            me. send_rc_control(0,0,-25,0)
-            #time.sleep(2.2)
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
             me.land()
