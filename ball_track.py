@@ -7,10 +7,12 @@ me = tello.Tello()
 me.connect()
 print(me.get_battery())
 me.streamon()
-#me.takeoff()
-#me.send_rc_control(0,0,-25,0)
-#print(me.get_current_state())
-#time.sleep(10)
+time.sleep(4)
+me.takeoff()
+me.send_rc_control(0,0,-25,0)
+time.sleep(2.2)
+print(me.get_current_state())
+
 #Frame größe
 width = 600
 height = 600
@@ -50,15 +52,15 @@ def trackball(me, center, radius):
     if radius < (Abstandradius - (Abstandradius * abstandaccuracy)):
         # ball bewegt sich weg
         print("VORWÄRTS")
-        vr = -10
+        vr = 0#-10
     if radius > (Abstandradius + (Abstandradius * abstandaccuracy)):
         # ball bewegt sich auf drohne zu
         print("RÜCKWÄRTS")
-        vr = 10
+        vr = 0#10
     speed = 10
-    #me.send_rc_control(lr, vr, hr, speed)
+    me.send_rc_control(lr, vr, hr, speed)
     print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(
-        vr) + "  speed: " + str(speed))
+        hr) + "  speed: " + str(speed))
 
 while True:
     # Variablen
@@ -73,14 +75,14 @@ while True:
     #blurred = cv2.GaussianBlur(frame, (11, 11), 0)
     #cv2.imshow("Blurred", blurred)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    cv2.imshow("hsv", hsv)
+    #cv2.imshow("hsv", hsv)
     #create a mask for the color you want, then perform
     # a series of dilations and erosions to remove any small
     # blobs left in the mask
     mask = cv2.inRange(hsv, colorLower, colorUpper)
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
-    cv2.imshow("mask", mask)
+    #cv2.imshow("mask", mask)
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -135,10 +137,12 @@ while True:
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
-            #me.land()
+            me.land()
             break
     else:
         print("no ball")
+        me.send_rc_control(0,0,0,0)
+        
         #Sicherung wenn kein ball entdeckt nichts machen
 me.streamoff()
 cv2.destroyAllWindows()
