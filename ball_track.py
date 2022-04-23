@@ -4,10 +4,16 @@ from djitellopy import tello
 import cv2
 
 me = tello.Tello()
+#me.connect_to_wifi()
+#time.sleep(20)
 me.connect()
+me.set_video_fps('high')
+me.set_video_bitrate(5)
+me.set_video_resolution('low')
 print(me.get_battery())
 me.streamon()
 time.sleep(4)
+me.turn_motor_on()
 me.takeoff()
 me.send_rc_control(0,0,-25,0)
 time.sleep(2.2)
@@ -35,20 +41,20 @@ def trackball(me, center, radius):
     speed = 0
     if center[0] > (framecenter[0] + (framecenter[0] * accuracy)):
         # ball rechts von mitte
-        print("LINKS")
-        lr = -10
+        print("RECHTS")
+        lr = 0#30
     if center[0] < (framecenter[0] - (framecenter[0] * accuracy)):
         # ball links von mitte
-        print("RECHTS")
-        lr = 10
+        print("LINKS")
+        lr = 0#-30
     if center[1] < (framecenter[1] - (framecenter[1] * accuracy)):
         # ball über mitte
         print("RUNTER")
-        hr = 10
+        hr = 30
     if center[1] > (framecenter[1] + (framecenter[1] * accuracy)):
         # ball unter mitte
         print("HOCH")
-        hr = -10
+        hr = -30
     if radius < (Abstandradius - (Abstandradius * abstandaccuracy)):
         # ball bewegt sich weg
         print("VORWÄRTS")
@@ -106,42 +112,16 @@ while True:
         # show the frame to our screen
         trackball(me,center,radius)
         cv2.imshow("Frame", frame)
-
-        # if center[0] > (framecenter[0]+(framecenter[0]*accuracy)):
-        #     #ball rechts von mitte
-        #     print("LINKS")
-        #     lr = -10
-        # if center[0] < (framecenter[0]-(framecenter[0]*accuracy)):
-        #     # ball links von mitte
-        #     print("RECHTS")
-        #     lr = 10
-        # if center[1] < (framecenter[1]-(framecenter[1]*accuracy)):
-        #     # ball über mitte
-        #     print("RUNTER")
-        #     hr = 10
-        # if center[1] > (framecenter[1]+(framecenter[1]*accuracy)):
-        #     # ball unter mitte
-        #     print("HOCH")
-        #     hr = -10
-        # if radius < (Abstandradius-(Abstandradius*abstandaccuracy)):
-        #     #ball bewegt sich weg
-        #     print("VORWÄRTS")
-        #     vr = -10
-        # if radius > (Abstandradius+(Abstandradius*abstandaccuracy)):
-        #     #ball bewegt sich auf drohne zu
-        #     print("RÜCKWÄRTS")
-        #     vr = 10
-        # speed = 10
-        # me.send_rc_control(lr,vr,hr,speed)
-        # print("links/rechts: " + str(lr) + "  vorwärts/rückwärts: " + str(vr) + "  hoch/runter: " + str(vr) + "  speed: " + str(speed))
-        key = cv2.waitKey(1) & 0xFF
-        # if the 'q' key is pressed, stop the loop
-        if key == ord("q"):
-            me.land()
-            break
     else:
         print("no ball")
         me.send_rc_control(0,0,0,0)
+    key = cv2.waitKey(1) & 0xFF
+    # if the 'q' key is pressed, stop the loop
+    if key == ord("q"):
+        me.land()
+        me.end()
+        me.turn_motor_off()
+        break
         
         #Sicherung wenn kein ball entdeckt nichts machen
 me.streamoff()
