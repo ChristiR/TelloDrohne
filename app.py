@@ -107,6 +107,7 @@ class MainWindow(QMainWindow):
     def button_disconnect(self):
         self.btn_connect.setDisabled(False)
         self.addNewLogLine("Video stream paused. Hit 'Connect' to resume")
+        self.video_thread.terminate()
         me.streamoff()
 
     def button_check_battery(self):
