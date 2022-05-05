@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="baddbab2-a40a-459a-abab-3ae7f06ea840" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tello-Drohne.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tello-Drohne.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ball_track.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ball_tracking.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/balltrack.py" beforeDir="false" />
