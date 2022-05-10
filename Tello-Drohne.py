@@ -139,7 +139,8 @@ def trackball(me, center, radius):
         if center[0] > 600:
             lr1 = 100
         if lr1 != 0:
-            me.rotate_clockwise(lr1)
+            #me.rotate_clockwise(lr1)
+            print()
     if center[0] < framecenter[0]:
         # ball links von mitte
         #print("LINKS")
@@ -170,7 +171,8 @@ def trackball(me, center, radius):
         if center[0] < 40:
             lr2 = 100
         if lr2 != 0:
-            me.rotate_counter_clockwise()(lr2)
+            #me.rotate_counter_clockwise(lr2)
+            print()
     if center[1] < framecenter[1]:
         # ball über mitte
         #print("RUNTER")
@@ -256,8 +258,8 @@ def trackball(me, center, radius):
 def stream():
     me.streamon()
     time.sleep(4)
-    me.turn_motor_on()
-    me.takeoff()
+   # me.turn_motor_on()
+    #me.takeoff()
     me.send_rc_control(0, 0, -25, 0)
     time.sleep(2.2)
     #print(me.get_current_state())
@@ -272,8 +274,8 @@ def stream():
     accuracy = 0.3  # genauigkeit was noch mitte ist
 
     # Colorcode in HSV
-    colorLower = (39, 255, 255)
-    colorUpper = (16, 61, 129)
+    colorLower = (27, 80, 182)
+    colorUpper = (31, 184, 255)
 
     n = 0
 
