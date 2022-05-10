@@ -111,6 +111,7 @@ class MainWindow(QMainWindow):
         self.btn_connect.setDisabled(False)
         self.addNewLogLine("Video stream paused. Hit 'Connect' to resume")
         self.video_thread.terminate()
+        me.land()
         me.streamoff()
 
     def button_check_battery(self):
@@ -127,11 +128,122 @@ class ThreadRunStream(QThread):
         me.connect()
         super().__init__()
 
+    def trackball(self, me, center, radius):
+        width = 640
+        height = 480
+        framecenter = (int(width // 2), int(height // 2))
+        lr = 0
+        vr = 0
+        hr = 0
+        speed = 0
+        if center[0] > framecenter[0]:
+            # ball rechts von mitte
+            # print("RECHTS")
+            # lr = 0
+            # if center[0] > 350:
+            #     lr = 10
+            # if center[0] > 400:
+            #     lr = 25
+            # if center[0] > 450:
+            #     lr = 35
+            # if center[0] > 500:
+            #     lr = 50
+            # if center[0] > 550:
+            #     lr = 75
+            # if center[0] > 600:
+            #     lr = 100
+            lr1 = 0
+            if center[0] > 350:
+                lr1 = 10
+            if center[0] > 400:
+                lr1 = 25
+            if center[0] > 450:
+                lr1 = 35
+            if center[0] > 500:
+                lr1 = 50
+            if center[0] > 550:
+                lr1 = 75
+            if center[0] > 600:
+                lr1 = 100
+            if lr1 != 0:
+                me.rotate_clockwise(lr1)
+        if center[0] < framecenter[0]:
+            # ball links von mitte
+            # print("LINKS")
+            # lr = 0
+            # if center[0] < 290:
+            #     lr = -10
+            # if center[0] < 240:
+            #     lr = -25
+            # if center[0] < 190:
+            #     lr = -35
+            # if center[0] < 140:
+            #     lr = -50
+            # if center[0] < 90:
+            #     lr = -75
+            # if center[0] < 40:
+            #     lr = -100
+            lr2 = 0
+            if center[0] < 290:
+                lr2 = 10
+            if center[0] < 240:
+                lr2 = 25
+            if center[0] < 190:
+                lr2 = 35
+            if center[0] < 140:
+                lr2 = 50
+            if center[0] < 90:
+                lr2 = 75
+            if center[0] < 40:
+                lr2 = 100
+            if lr2 != 0:
+                me.rotate_counter_clockwise(lr2)
+        if center[1] < framecenter[1]:
+            # ball über mitte
+            # print("RUNTER")
+            hr = 0
+            if center[1] < 180:
+                hr = 10
+            if center[1] < 150:
+                hr = 25
+            if center[1] < 120:
+                hr = 50
+            if center[1] < 90:
+                hr = 75
+            if center[1] < 60:
+                hr = 100
+            me.send_rc_control(lr, vr, hr, speed)
+        if center[1] > framecenter[1]:
+            # ball unter mitte
+            # print("HOCH")
+            hr = 0
+            if center[1] > 300:
+                hr = -10
+            if center[1] > 330:
+                hr = -25
+            if center[1] > 360:
+                hr = -50
+            if center[1] > 390:
+                hr = -75
+            if center[1] > 420:
+                hr = -100
+            me.send_rc_control(lr, vr, hr, speed)
+        if radius < 1:
+            # ball bewegt sich weg
+            # print("VORWÄRTS")
+            vr = 0  # -10
+        if radius > 1:
+            # ball bewegt sich auf drohne zu
+            # print("RÜCKWÄRTS")
+            vr = 0  # 10
+        speed = 10
+
     def run(self):
         me.set_video_fps('high')
         me.set_video_bitrate(5)
         me.set_video_resolution('low')
         me.streamon()
+        me.takeoff()
         while self.keep_running:
             # https://stackoverflow.com/a/55468544/6622587
             img = me.get_frame_read().frame
@@ -155,7 +267,7 @@ class ThreadRunStream(QThread):
                     cv2.circle(img, (int(x), int(y)), int(radius),
                                (0, 255, 255), 2)
                     cv2.circle(img, center, 5, (0, 0, 255), -1)
-
+                self.trackball(me, center, radius)
 
             # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
             # rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
