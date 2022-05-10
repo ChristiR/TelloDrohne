@@ -170,7 +170,7 @@ def trackball(me, center, radius):
         if center[0] < 40:
             lr2 = 100
         if lr2 != 0:
-            me.rotate_counter_clockwise()(lr2)
+            me.rotate_counter_clockwise(lr2)
     if center[1] < framecenter[1]:
         # ball über mitte
         #print("RUNTER")
