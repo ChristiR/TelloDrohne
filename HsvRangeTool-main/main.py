@@ -242,26 +242,19 @@ class MainWindow(QMainWindow):
         self.updateMask()
 
     def onBtnOpenClicked(self):
-        #options = QFileDialog.Options()
-        #fileName, _ = QFileDialog.getOpenFileName(
+        # options = QFileDialog.Options()
+        # fileName, _ = QFileDialog.getOpenFileName(
         #    self, "QFileDialog.getOpenFileName()", "", "All Files (*);;Jpeg (*.jpeg);;BMP (*.bmp)", options=options)
-
-        frame = me.get_frame_read().frame
+        frame = me.get_frame_read()
         cv2.imwrite("picture.png", frame.frame)
         fileName = "picture.png"
         if not fileName:
             return
-        #self.srcQimg = QImage(fileName=fileName, format=QImage.Format_RGB32)
-        buffer = cv2.imencode('.png', frame)
-        jpg_as_text = base64.b64encode(buffer)
-        print(jpg_as_text)
+        # self.srcQimg = QImage(fileName=fileName, format=QImage.Format_RGB32)
 
-        # qp = QPixmap()
-        # qp.loadFromData(my_bytes)
-
-        # self.updateRawImg(cv2.imread(fileName))
-        #with open(fileName, 'rb') as f:
-         #   self.updateRawImg(QImage.fromData(f.read()))
+        self.updateRawImg(cv2.imread(fileName))
+        # with open(fileName, 'rb') as f:
+        #   self.updateRawImg(QImage.fromData(f.read()))
 
 
 if __name__ == "__main__":
