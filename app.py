@@ -1,4 +1,6 @@
 import sys
+
+import imutils
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from PyQt5 import Qt
@@ -11,7 +13,8 @@ import subprocess
 
 
 me = tello.Tello()
-
+colorLower = (27, 80, 182)
+colorUpper = (31, 184, 255)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -125,15 +128,40 @@ class ThreadRunStream(QThread):
         super().__init__()
 
     def run(self):
+        me.set_video_fps('high')
+        me.set_video_bitrate(5)
+        me.set_video_resolution('low')
         me.streamon()
         while self.keep_running:
             # https://stackoverflow.com/a/55468544/6622587
             img = me.get_frame_read().frame
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+            mask = cv2.inRange(hsv, colorLower, colorUpper)
+            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
+                                    cv2.CHAIN_APPROX_SIMPLE)
+            cnts = imutils.grab_contours(cnts)
+            if len(cnts) > 0:
+                # find the largest contour in the mask, then use
+                # it to compute the minimum enclosing circle and
+                # centroid
+                c = max(cnts, key=cv2.contourArea)
+                ((x, y), radius) = cv2.minEnclosingCircle(c)
+                M = cv2.moments(c)
+                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                # print(center)
+                # only proceed if the radius meets a minimum size
+                if radius > 5:
+                    # draw the circle and centroid on the frame
+                    cv2.circle(img, (int(x), int(y)), int(radius),
+                               (0, 255, 255), 2)
+                    cv2.circle(img, center, 5, (0, 0, 255), -1)
+
+
             # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
-            rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgbImage.shape
+            # rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            h, w, ch = img.shape
             bytesPerLine = ch * w
-            convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
+            convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
             p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
             self.changePixmap.emit(p)
             if b"TELLO" not in subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces']):
