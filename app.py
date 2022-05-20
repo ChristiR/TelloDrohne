@@ -13,8 +13,8 @@ import subprocess
 
 
 me = tello.Tello()
-colorLower = (61, 90, 87)
-colorUpper = (80, 214, 190)
+colorLower = (93, 93, 126)
+colorUpper = (111, 234, 241)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -240,12 +240,13 @@ class ThreadRunStream(QThread):
 
     def run(self):
         me.takeoff()
+        print(me.streamon)
         if not me.stream_on:
             me.streamon()
             me.set_video_fps('high')
             me.set_video_bitrate(5)
             me.set_video_resolution('low')
-
+        self.wait(10000)
         while self.keep_running:
             # https://stackoverflow.com/a/55468544/6622587
             img = me.get_frame_read().frame
@@ -263,14 +264,18 @@ class ThreadRunStream(QThread):
                 M = cv2.moments(c)
                 if M["m00"] != 0:
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                # print(center)
+                    print(center)
                 # only proceed if the radius meets a minimum size
-                if radius > 5:
-                    # draw the circle and centroid on the frame
-                    cv2.circle(img, (int(x), int(y)), int(radius),
-                               (0, 255, 255), 2)
-                    cv2.circle(img, center, 5, (0, 0, 255), -1)
-                self.trackball(me, center, radius)
+                    if radius > 5:
+                        # draw the circle and centroid on the frame
+                        cv2.circle(img, (int(x), int(y)), int(radius),
+                                   (0, 255, 255), 2)
+                        cv2.circle(img, center, 5, (0, 0, 255), -1)
+                        self.trackball2(me, center, radius)
+
+
+
+                        # self.trackball(me, center, radius)
 
             # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
             # rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -282,6 +287,28 @@ class ThreadRunStream(QThread):
             if b"TELLO" not in subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces']):
                 self.main_window.addNewLogLine("TELLO drone disconnected")
                 self.keep_running = False
+
+    def trackball2(self, me, center, radius):
+        width = 640
+        height = 480
+        framecenter = (int(width // 2), int(height // 2))
+        x_distance = center[0] - framecenter[0]
+        x_distance = int(x_distance * 0.1)
+        if x_distance > 100:
+            x_distance = 100
+        if abs(x_distance) > 15:
+            me.rotate_clockwise(x_distance)
+        else:
+            print(radius)
+            if radius > 15 and radius < 50:
+                me.send_rc_control(0, 0, 0, 0)
+            elif radius < 15:
+                # velocity = int(50/radius)
+                me.send_rc_control(0, 20, 0, 0)
+            elif radius > 50:
+                # velocity = int(40-radius)
+                me.send_rc_control(0, -20, 0, 0)
+
 
 
 if __name__ == '__main__':
