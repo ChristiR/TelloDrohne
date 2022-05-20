@@ -13,8 +13,8 @@ import subprocess
 
 
 me = tello.Tello()
-colorLower = (27, 80, 182)
-colorUpper = (31, 184, 255)
+colorLower = (61, 90, 87)
+colorUpper = (80, 214, 190)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -239,11 +239,13 @@ class ThreadRunStream(QThread):
         speed = 10
 
     def run(self):
-        me.set_video_fps('high')
-        me.set_video_bitrate(5)
-        me.set_video_resolution('low')
-        me.streamon()
         me.takeoff()
+        if not me.stream_on:
+            me.streamon()
+            me.set_video_fps('high')
+            me.set_video_bitrate(5)
+            me.set_video_resolution('low')
+
         while self.keep_running:
             # https://stackoverflow.com/a/55468544/6622587
             img = me.get_frame_read().frame
@@ -259,7 +261,8 @@ class ThreadRunStream(QThread):
                 c = max(cnts, key=cv2.contourArea)
                 ((x, y), radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
-                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                if M["m00"] != 0:
+                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                 # print(center)
                 # only proceed if the radius meets a minimum size
                 if radius > 5:
