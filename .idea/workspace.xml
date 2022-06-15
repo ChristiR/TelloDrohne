@@ -2,35 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="baddbab2-a40a-459a-abab-3ae7f06ea840" name="Default Changelist" comment="ball folgen">
-      <change afterPath="$PROJECT_DIR$/HsvRangeTool-main/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/hsv_color.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/assets/main_window.ui" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/hsv_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/.vscode/settings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/assets/app.png" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/assets/app.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/assets/main_window.ui" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/assets/main_window.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/example/robot2orange.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/example/robot2orange.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/example/robot4orange.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/example/robot4orange.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/picture.png" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/picture.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HsvRangeTool-main/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/HsvRangeTool-main/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steuerung.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tello-Drohne.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball_track.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ball_tracking.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/balltrack.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/imageCapture.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/latencyfree.py" beforeDir="false" afterPath="$PROJECT_DIR$/latencyfree.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/multiprocessing_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/stats.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tello.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tello_stream.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/hsv_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/hsv_widget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

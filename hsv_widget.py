@@ -41,6 +41,7 @@ class HsvWidget(QWidget):
         uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/main_window.ui"), self)
 
         self.sliderH = self.findChild(QSlider, "sliderH")
+        self.sliderH.setMinimumWidth(165)
         self.sliderS = self.findChild(QSlider, "sliderS")
         self.sliderV = self.findChild(QSlider, "sliderV")
 
