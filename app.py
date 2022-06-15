@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
 
     def button_check_battery(self):
         drone.connect()
-        self.addNewLogLine(f"Battery level: {drone}%")
+        self.addNewLogLine(f"Battery level: {drone.state}%")
 
 
 class ThreadRunStream(QThread):
@@ -173,6 +173,7 @@ class ThreadRunStream(QThread):
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     cnts = imutils.grab_contours(cnts)
                     center = None
+                    radius = None
                     if len(cnts) > 0:
                         # find the largest contour in the mask, then use
                         # it to compute the minimum enclosing circle and
@@ -215,6 +216,7 @@ class ThreadRunStream(QThread):
         print(f"BALL: {center} - {radius}")
         if center is None:
             drone.clockwise(0)
+            drone.forward(0)
         else:
             width = 640
             height = 480
@@ -229,15 +231,15 @@ class ThreadRunStream(QThread):
                 drone.counter_clockwise(abs(x_distance))
             else:
                 drone.clockwise(0)
-                print(radius)
-                # if radius > 15 and radius < 50:
-                #     me.send_rc_control(0, 0, 0, 0)
-                # elif radius < 15:
-                #     # velocity = int(50/radius)
-                #     me.send_rc_control(0, 20, 0, 0)
-                # elif radius > 50:
-                #     # velocity = int(40-radius)
-                #     me.send_rc_control(0, -20, 0, 0)
+                # print(radius)
+                if radius > 15 and radius < 50:
+                    drone.forward(0)
+                elif radius < 15:
+                    # velocity = int(50/radius)
+                    drone.forward(20)
+                elif radius > 50:
+                    # velocity = int(40-radius)
+                    drone.backward(20)
 
 
 if __name__ == '__main__':
