@@ -19,8 +19,8 @@ import time
 import subprocess
 
 drone = tellopy.Tello()
-colorLower = (62, 89, 75)
-colorUpper = (74, 203, 164)
+colorLower = (71, 95, 168)
+colorUpper = (83, 186, 255)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -137,8 +137,8 @@ class ThreadRunStream(QThread):
 
         try:
             drone.connect()
-            drone.takeoff()
             drone.wait_for_connection(60.0)
+
 
             retry = 3
             container = None
@@ -152,6 +152,7 @@ class ThreadRunStream(QThread):
 
             # skip first 300 frames
             frame_skip = 300
+            drone.takeoff()
             while True:
                 for frame in container.decode(video=0):
                     if 0 < frame_skip:
@@ -223,6 +224,8 @@ class ThreadRunStream(QThread):
             framecenter = (int(width // 2), int(height // 2))
             x_distance = center[0] - framecenter[0]
             x_distance = int(x_distance * 0.1)
+            y_distance = center[1] - framecenter[1]
+            y_distance = int(y_distance * 0.1)
             if x_distance > 100:
                 x_distance = 100
             if x_distance > 15:
@@ -232,15 +235,22 @@ class ThreadRunStream(QThread):
             else:
                 drone.clockwise(0)
                 # print(radius)
-                if radius > 15 and radius < 50:
-                    drone.forward(0)
-                elif radius < 15:
-                    # velocity = int(50/radius)
-                    drone.forward(20)
-                elif radius > 50:
-                    # velocity = int(40-radius)
-                    drone.backward(20)
-
+            if radius > 15 and radius < 50:
+                drone.forward(0)
+            elif radius < 15:
+                # velocity = int(50/radius)
+                drone.forward(20)
+            elif radius > 50:
+                # velocity = int(40-radius)
+                drone.backward(20)
+            if y_distance > 100:
+                y_distance = 100
+            if y_distance > 15:
+                drone.down(abs(y_distance))
+            elif y_distance < -15:
+                drone.up(abs(y_distance))
+            else:
+                drone.up(0)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
