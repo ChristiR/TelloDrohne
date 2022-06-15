@@ -18,7 +18,7 @@ import time
 
 import subprocess
 
-from hsv_widget import *
+from main import *
 
 drone = tellopy.Tello()
 colorLower = (62, 89, 75)

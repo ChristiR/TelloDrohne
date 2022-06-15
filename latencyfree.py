@@ -1,8 +1,11 @@
 import sys
 import traceback
+
+import numpy as np
 import tellopy
 import av
-import cv2  # for avoidance of pylint error
+import cv2
+# import cv2_.cv2 as cv2
 import numpy
 import time
 
@@ -33,8 +36,26 @@ def main():
                     continue
                 start_time = time.time()
                 image = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-                cv2.imshow('Original', image)
-                cv2.imshow('Canny', cv2.Canny(image, 100, 200))
+                # cv2.imshow('Original', image)
+                # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
+
+                img = image
+                img = cv2.medianBlur(img, 5)
+
+                gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                circles = cv2.HoughCircles(gray,cv2.HOUGH_GRADIENT, 1.0, 20, param1=70)
+                print(f"Circles: {circles}")
+                # circles = np.uint16(np.around(circles))
+                print(f"Circles2: {circles}")
+                if circles is not None:
+                    for i in circles[0, :]:
+                        # draw the outer circle
+                        cv2.circle(img, (int(i[0]), int(i[1])), int(i[2]), (0, 255, 0), 2)
+                        # draw the center of the circle
+                        cv2.circle(img, (int(i[0]), int(i[1])), 2, (0, 0, 255), 3)
+
+                cv2.imshow('detected circles', img)
+
                 cv2.waitKey(1)
                 if frame.time_base < 1.0 / 60:
                     time_base = 1.0 / 60
