@@ -133,120 +133,11 @@ class ThreadRunStream(QThread):
         drone.connect()
         super().__init__()
 
-    def trackball(self, me, center, radius):
-        width = 640
-        height = 480
-        framecenter = (int(width // 2), int(height // 2))
-        lr = 0
-        vr = 0
-        hr = 0
-        speed = 0
-        if center[0] > framecenter[0]:
-            # ball rechts von mitte
-            # print("RECHTS")
-            # lr = 0
-            # if center[0] > 350:
-            #     lr = 10
-            # if center[0] > 400:
-            #     lr = 25
-            # if center[0] > 450:
-            #     lr = 35
-            # if center[0] > 500:
-            #     lr = 50
-            # if center[0] > 550:
-            #     lr = 75
-            # if center[0] > 600:
-            #     lr = 100
-            lr1 = 0
-            if center[0] > 350:
-                lr1 = 10
-            if center[0] > 400:
-                lr1 = 25
-            if center[0] > 450:
-                lr1 = 35
-            if center[0] > 500:
-                lr1 = 50
-            if center[0] > 550:
-                lr1 = 75
-            if center[0] > 600:
-                lr1 = 100
-            if lr1 != 0:
-                me.rotate_clockwise(lr1)
-        if center[0] < framecenter[0]:
-            # ball links von mitte
-            # print("LINKS")
-            # lr = 0
-            # if center[0] < 290:
-            #     lr = -10
-            # if center[0] < 240:
-            #     lr = -25
-            # if center[0] < 190:
-            #     lr = -35
-            # if center[0] < 140:
-            #     lr = -50
-            # if center[0] < 90:
-            #     lr = -75
-            # if center[0] < 40:
-            #     lr = -100
-            lr2 = 0
-            if center[0] < 290:
-                lr2 = 10
-            if center[0] < 240:
-                lr2 = 25
-            if center[0] < 190:
-                lr2 = 35
-            if center[0] < 140:
-                lr2 = 50
-            if center[0] < 90:
-                lr2 = 75
-            if center[0] < 40:
-                lr2 = 100
-            if lr2 != 0:
-                me.rotate_counter_clockwise(lr2)
-        if center[1] < framecenter[1]:
-            # ball über mitte
-            # print("RUNTER")
-            hr = 0
-            if center[1] < 180:
-                hr = 10
-            if center[1] < 150:
-                hr = 25
-            if center[1] < 120:
-                hr = 50
-            if center[1] < 90:
-                hr = 75
-            if center[1] < 60:
-                hr = 100
-            me.send_rc_control(lr, vr, hr, speed)
-        if center[1] > framecenter[1]:
-            # ball unter mitte
-            # print("HOCH")
-            hr = 0
-            if center[1] > 300:
-                hr = -10
-            if center[1] > 330:
-                hr = -25
-            if center[1] > 360:
-                hr = -50
-            if center[1] > 390:
-                hr = -75
-            if center[1] > 420:
-                hr = -100
-            me.send_rc_control(lr, vr, hr, speed)
-        if radius < 1:
-            # ball bewegt sich weg
-            # print("VORWÄRTS")
-            vr = 0  # -10
-        if radius > 1:
-            # ball bewegt sich auf drohne zu
-            # print("RÜCKWÄRTS")
-            vr = 0  # 10
-        speed = 10
-
     def run(self):
 
         try:
             drone.connect()
+            drone.takeoff()
             drone.wait_for_connection(60.0)
 
             retry = 3
@@ -281,6 +172,7 @@ class ThreadRunStream(QThread):
                     mask = cv2.inRange(hsv, colorLower, colorUpper)
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     cnts = imutils.grab_contours(cnts)
+                    center = None
                     if len(cnts) > 0:
                         # find the largest contour in the mask, then use
                         # it to compute the minimum enclosing circle and
@@ -297,14 +189,18 @@ class ThreadRunStream(QThread):
                                 cv2.circle(img, (int(x), int(y)), int(radius),
                                            (0, 255, 255), 2)
                                 cv2.circle(img, center, 5, (0, 0, 255), -1)
-                                # self.trackball2(drone, center, radius)
-
+                    self.trackball2(drone, center, radius)
+                    # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     h, w, ch = img.shape
                     bytesPerLine = ch * w
                     convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
                     p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
                     self.changePixmap.emit(p)
 
+            # if b"TELLO" not in subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces']):
+            #     self.main_window.addNewLogLine("TELLO drone disconnected")
+            #     self.keep_running = False
 
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -314,75 +210,34 @@ class ThreadRunStream(QThread):
             drone.quit()
             cv2.destroyAllWindows()
 
-        me.takeoff()
-        print(me.streamon)
-        if not me.stream_on:
-            me.streamon()
-            me.set_video_fps('high')
-            me.set_video_bitrate(5)
-            me.set_video_resolution('low')
-        self.wait(10000)
-        while self.keep_running:
-            # https://stackoverflow.com/a/55468544/6622587
-            img = me.get_frame_read().frame
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            mask = cv2.inRange(hsv, colorLower, colorUpper)
-            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            cnts = imutils.grab_contours(cnts)
-            if len(cnts) > 0:
-                # find the largest contour in the mask, then use
-                # it to compute the minimum enclosing circle and
-                # centroid
-                c = max(cnts, key=cv2.contourArea)
-                ((x, y), radius) = cv2.minEnclosingCircle(c)
-                M = cv2.moments(c)
-                if M["m00"] != 0:
-                    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                    print(center)
-                # only proceed if the radius meets a minimum size
-                    if radius > 5:
-                        # draw the circle and centroid on the frame
-                        cv2.circle(img, (int(x), int(y)), int(radius),
-                                   (0, 255, 255), 2)
-                        cv2.circle(img, center, 5, (0, 0, 255), -1)
-                        self.trackball2(me, center, radius)
-
-
-
-                        # self.trackball(me, center, radius)
-
-            # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
-            # rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            h, w, ch = img.shape
-            bytesPerLine = ch * w
-            convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
-            p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
-            self.changePixmap.emit(p)
-            if b"TELLO" not in subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces']):
-                self.main_window.addNewLogLine("TELLO drone disconnected")
-                self.keep_running = False
 
     def trackball2(self, me, center, radius):
-        width = 640
-        height = 480
-        framecenter = (int(width // 2), int(height // 2))
-        x_distance = center[0] - framecenter[0]
-        x_distance = int(x_distance * 0.1)
-        if x_distance > 100:
-            x_distance = 100
-        if abs(x_distance) > 15:
-            me.rotate_clockwise(x_distance)
+        print(f"BALL: {center} - {radius}")
+        if center is None:
+            drone.clockwise(0)
         else:
-            print(radius)
-            if radius > 15 and radius < 50:
-                me.send_rc_control(0, 0, 0, 0)
-            elif radius < 15:
-                # velocity = int(50/radius)
-                me.send_rc_control(0, 20, 0, 0)
-            elif radius > 50:
-                # velocity = int(40-radius)
-                me.send_rc_control(0, -20, 0, 0)
-
+            width = 640
+            height = 480
+            framecenter = (int(width // 2), int(height // 2))
+            x_distance = center[0] - framecenter[0]
+            x_distance = int(x_distance * 0.1)
+            if x_distance > 100:
+                x_distance = 100
+            if x_distance > 15:
+                drone.clockwise(abs(x_distance))
+            elif x_distance < -15:
+                drone.counter_clockwise(abs(x_distance))
+            else:
+                drone.clockwise(0)
+                print(radius)
+                # if radius > 15 and radius < 50:
+                #     me.send_rc_control(0, 0, 0, 0)
+                # elif radius < 15:
+                #     # velocity = int(50/radius)
+                #     me.send_rc_control(0, 20, 0, 0)
+                # elif radius > 50:
+                #     # velocity = int(40-radius)
+                #     me.send_rc_control(0, -20, 0, 0)
 
 
 if __name__ == '__main__':
