@@ -9,12 +9,18 @@ from PyQt5.QtGui import QImage, QPixmap
 from djitellopy import tello
 import cv2
 
+import sys
+import traceback
+import tellopy
+import av
+import numpy
+import time
+
 import subprocess
 
-
-me = tello.Tello()
-colorLower = (93, 93, 126)
-colorUpper = (111, 234, 241)
+drone = tellopy.Tello()
+colorLower = (62, 89, 75)
+colorUpper = (74, 203, 164)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -111,12 +117,11 @@ class MainWindow(QMainWindow):
         self.btn_connect.setDisabled(False)
         self.addNewLogLine("Video stream paused. Hit 'Connect' to resume")
         self.video_thread.terminate()
-        me.land()
-        me.streamoff()
+        drone.land()
 
     def button_check_battery(self):
-        me.connect()
-        self.addNewLogLine(f"Battery level: {me.get_battery()}%")
+        drone.connect()
+        self.addNewLogLine(f"Battery level: {drone}%")
 
 
 class ThreadRunStream(QThread):
@@ -125,7 +130,7 @@ class ThreadRunStream(QThread):
     def __init__(self, main_window):
         self.main_window = main_window
         self.keep_running = True
-        me.connect()
+        drone.connect()
         super().__init__()
 
     def trackball(self, me, center, radius):
@@ -239,6 +244,76 @@ class ThreadRunStream(QThread):
         speed = 10
 
     def run(self):
+
+        try:
+            drone.connect()
+            drone.wait_for_connection(60.0)
+
+            retry = 3
+            container = None
+            while container is None and 0 < retry:
+                retry -= 1
+                try:
+                    container = av.open(drone.get_video_stream())
+                except av.AVError as ave:
+                    print(ave)
+                    print('retry...')
+
+            # skip first 300 frames
+            frame_skip = 300
+            while True:
+                for frame in container.decode(video=0):
+                    if 0 < frame_skip:
+                        frame_skip = frame_skip - 1
+                        continue
+                    start_time = time.time()
+                    img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+                    # cv2.imshow('Original', image)
+                    # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
+                    cv2.waitKey(1)
+                    if frame.time_base < 1.0 / 60:
+                        time_base = 1.0 / 60
+                    else:
+                        time_base = frame.time_base
+                    frame_skip = int((time.time() - start_time) / time_base)
+
+                    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+                    mask = cv2.inRange(hsv, colorLower, colorUpper)
+                    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    cnts = imutils.grab_contours(cnts)
+                    if len(cnts) > 0:
+                        # find the largest contour in the mask, then use
+                        # it to compute the minimum enclosing circle and
+                        # centroid
+                        c = max(cnts, key=cv2.contourArea)
+                        ((x, y), radius) = cv2.minEnclosingCircle(c)
+                        M = cv2.moments(c)
+                        if M["m00"] != 0:
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                            print(center)
+                            # only proceed if the radius meets a minimum size
+                            if radius > 5:
+                                # draw the circle and centroid on the frame
+                                cv2.circle(img, (int(x), int(y)), int(radius),
+                                           (0, 255, 255), 2)
+                                cv2.circle(img, center, 5, (0, 0, 255), -1)
+                                # self.trackball2(drone, center, radius)
+
+                    h, w, ch = img.shape
+                    bytesPerLine = ch * w
+                    convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                    p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+                    self.changePixmap.emit(p)
+
+
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            print(ex)
+        finally:
+            drone.quit()
+            cv2.destroyAllWindows()
+
         me.takeoff()
         print(me.streamon)
         if not me.stream_on:
@@ -252,8 +327,7 @@ class ThreadRunStream(QThread):
             img = me.get_frame_read().frame
             hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv, colorLower, colorUpper)
-            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-                                    cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             cnts = imutils.grab_contours(cnts)
             if len(cnts) > 0:
                 # find the largest contour in the mask, then use
