@@ -360,7 +360,7 @@
         <item row="1" column="0">
          <widget class="QPushButton" name="btnOpen">
           <property name="text">
-           <string>Open</string>
+           <string>LOAD</string>
           </property>
          </widget>
         </item>
@@ -374,7 +374,7 @@
         <item row="1" column="1">
          <widget class="QPushButton" name="btnCopy">
           <property name="text">
-           <string>SAFE</string>
+           <string>SAVE</string>
           </property>
          </widget>
         </item>

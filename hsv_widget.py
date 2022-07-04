@@ -12,7 +12,16 @@ import cv2
 import numpy as np
 import os
 
-from djitellopy import tello
+import sys
+import traceback
+
+import numpy as np
+import tellopy
+import av
+import cv2
+# import cv2_.cv2 as cv2
+import numpy
+
 
 def generateSolidColorPixmap(w, h, color):
     canvas = QImage(QSize(w, h), QImage.Format_RGB30)
@@ -36,8 +45,11 @@ class HsvWidget(QWidget):
 
     imgHsvSpace = None
 
-    def __init__(self):
+    def __init__(self, window, drone):
         super(HsvWidget, self).__init__()
+        self.window = window
+        self.drone = drone
+        self.fileName = "picture.png"
         uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/main_window.ui"), self)
 
         self.sliderH = self.findChild(QSlider, "sliderH")
@@ -77,6 +89,7 @@ class HsvWidget(QWidget):
         self.loadHsvSpace()
         self.updateHSVPreview()
 
+
     def loadHsvSpace(self):
         self.imgHsvSpace = cv2.imread(os.path.join(os.path.dirname(__file__), "assets", "hsv_color.png"))
 
@@ -96,6 +109,9 @@ class HsvWidget(QWidget):
     def onBtnCopyClicked(self):
         print("Upper HSV: ", self.upperHSV)
         print("Lower HSV: ", self.lowerHSV)
+        self.window.updateLowerUpper(self.upperHSV, self.lowerHSV)
+        self.window.addNewLogLine(f"New Upper {self.upperHSV} new Lower {self.lowerHSV}")
+
 
     # =========== Helper ===========
     def updatePreviewHsvSpace(self):
@@ -149,8 +165,7 @@ class HsvWidget(QWidget):
 
         self.imgRaw = img
 
-        _imgAsQImg = QImage(
-            self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
+        _imgAsQImg = QImage(self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
 
         # self.imgRaw = img.scaled(200,100, QtCore.KeepAspectRatio)
         # self.imgRaw = img.scaledToHeight(self.previewMask.size().height())
@@ -239,41 +254,38 @@ class HsvWidget(QWidget):
         self.updateMask()
 
     def onBtnOpenClicked(self):
-        # # options = QFileDialog.Options()
-        # # fileName, _ = QFileDialog.getOpenFileName(
-        # #    self, "QFileDialog.getOpenFileName()", "", "All Files (*);;Jpeg (*.jpeg);;BMP (*.bmp)", options=options)
-        # frame = me.get_frame_read()
-        # cv2.imwrite("picture.png", frame.frame)
-        # fileName = "picture.png"
-        # if not fileName:
-        #     return
-        # # self.srcQimg = QImage(fileName=fileName, format=QImage.Format_RGB32)
-        #
-        # self.updateRawImg(cv2.imread(fileName))
-        # # with open(fileName, 'rb') as f:
-        # #   self.updateRawImg(QImage.fromData(f.read()))
-        pass
+        try:
+            self.drone.connect()
+            self.drone.wait_for_connection(60.0)
+            retry = 3
+            container = None
+            while container is None and 0 < retry:
+                retry -= 1
+                try:
+                    container = av.open(self.drone.get_video_stream())
+                except av.AVError as ave:
+                    print(ave)
+                    print('retry...')
 
+            # skip first 300 frames
+            frame_skip = 300
+            # while True:
+            for frame in container.decode(video=0):
+                if 0 < frame_skip:
+                    frame_skip = frame_skip - 1
+                    continue
+                image = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
+                cv2.imwrite(self.fileName, image)
+                if not self.fileName:
+                    return
+                self.updateRawImg(cv2.imread(self.fileName))
+                break
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            print(ex)
+        finally:
+            self.drone.quit()
+            cv2.destroyAllWindows()
 
-    def initUI(self):
-        self.setWindowTitle("Tello Drohne")
-        main_layout = QHBoxLayout()
-        main_layout.addWidget(HsvWidget())
-        main_layout.setStretch(0, 100)
-        main_widget = QWidget()
-        main_widget.setLayout(main_layout)
-        self.setCentralWidget(main_widget)
-
-        self.show()
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-    widget = MainWindow()
-    widget.show()
-    sys.exit(app.exec_())

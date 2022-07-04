@@ -21,8 +21,6 @@ import subprocess
 from hsv_widget import *
 
 drone = tellopy.Tello()
-colorLower = (62, 89, 75)
-colorUpper = (74, 203, 164)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -30,6 +28,9 @@ class MainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
+        self.colorLower = (62, 89, 75)
+        self.colorUpper = (74, 203, 164)
+
         self.setWindowTitle("Tello Drohne")
         left_frame = QFrame(self)
         left_frame.setFrameShape(QFrame.StyledPanel)
@@ -64,7 +65,7 @@ class MainWindow(QMainWindow):
 
         self.tab_1 = QLabel("Press 'Connect' to start")
         self.tab_1.setAlignment(Qt.AlignCenter)
-        self.tab_2 = HsvWidget()
+        self.tab_2 = HsvWidget(window=self, drone=drone)
         self.right_widget = QTabWidget()
         self.right_widget.addTab(self.tab_1, "Video stream")
         self.right_widget.addTab(self.tab_2, "HSV Color")
@@ -90,10 +91,15 @@ class MainWindow(QMainWindow):
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
         self.setGeometry(400, 200, 1100, 700)
-        self.setMinimumWidth(1100)
-        self.setMinimumHeight(740)
+        self.setFixedWidth(1100)
+        self.setFixedHeight(740)
         self.checkWifi()
         self.show()
+
+    def updateLowerUpper(self, lower, upper):
+        self.colorLower = lower
+        self.colorUpper = upper
+
 
     def addNewLogLine(self, text):
         self.loggingTextBox.appendPlainText(text)
@@ -120,7 +126,7 @@ class MainWindow(QMainWindow):
     def button_connect(self):
         self.btn_connect.setDisabled(True)
         self.addNewLogLine("Starting video stream...")
-        self.video_thread = ThreadRunStream(self)
+        self.video_thread = ThreadRunStream(self, self.colorUpper, self.colorLower)
         self.video_thread.changePixmap.connect(self.setStream)
         self.video_thread.start()
 
@@ -138,9 +144,10 @@ class MainWindow(QMainWindow):
 class ThreadRunStream(QThread):
     changePixmap = pyqtSignal(QImage)
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, upper, lower):
+        self.colorUpper = upper
+        self.colorLower = lower
         self.main_window = main_window
-        self.keep_running = True
         drone.connect()
         super().__init__()
 
@@ -180,7 +187,7 @@ class ThreadRunStream(QThread):
                     frame_skip = int((time.time() - start_time) / time_base)
 
                     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-                    mask = cv2.inRange(hsv, colorLower, colorUpper)
+                    mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     cnts = imutils.grab_contours(cnts)
                     center = None
