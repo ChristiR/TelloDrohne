@@ -28,8 +28,8 @@ class MainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.colorLower = (62, 89, 75)
         self.colorUpper = (74, 203, 164)
+        self.colorLower = (62, 89, 75)
 
         self.setWindowTitle("Tello Drohne")
         left_frame = QFrame(self)
@@ -79,7 +79,6 @@ class MainWindow(QMainWindow):
         self.loggingTextBox = QPlainTextEdit()
         self.loggingTextBox.setStyleSheet("QTextEdit {color:red}")
         self.loggingTextBox.setReadOnly(True)
-        # textBox.appendPlainText("testsdfasfasdfsadf")
         layout_bottom = QVBoxLayout()
         layout_bottom.addWidget(self.loggingTextBox)
         layout_bottom.setContentsMargins(0, 0, 0, 0)
@@ -95,11 +94,17 @@ class MainWindow(QMainWindow):
         self.setFixedHeight(740)
         self.checkWifi()
         self.show()
+        self.loadHsvValues()
+
+    def loadHsvValues(self):
+        with open('hsv.json') as f:
+            data = json.load(f)
+            self.colorUpper = tuple(data["hsv"]["colorUpper"])
+            self.colorLower = tuple(data["hsv"]["colorLower"])
 
     def updateLowerUpper(self, lower, upper):
         self.colorLower = lower
         self.colorUpper = upper
-
 
     def addNewLogLine(self, text):
         self.loggingTextBox.appendPlainText(text)

@@ -12,6 +12,8 @@ import cv2
 import numpy as np
 import os
 
+import json
+
 import sys
 import traceback
 
@@ -111,6 +113,16 @@ class HsvWidget(QWidget):
         print("Lower HSV: ", self.lowerHSV)
         self.window.updateLowerUpper(self.upperHSV, self.lowerHSV)
         self.window.addNewLogLine(f"New Upper {self.upperHSV} new Lower {self.lowerHSV}")
+        with open('hsv.json', 'w', encoding='utf-8') as f:
+            json_data = {
+                "hsv":
+                    {
+                        "colorUpper": self.upperHSV,
+                        "colorLower": self.lowerHSV
+                    }
+
+            }
+            json.dump(json_data, f, ensure_ascii=False, indent=4)
 
 
     # =========== Helper ===========
