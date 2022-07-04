@@ -4,7 +4,10 @@ import base64
 
 from PyQt5 import uic
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, QThread
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QFileDialog, QMainWindow, QLabel, QPushButton, QSlider, \
     QWidget, QHBoxLayout
@@ -23,6 +26,8 @@ import av
 import cv2
 # import cv2_.cv2 as cv2
 import numpy
+
+FILE_NAME = "picture.png"
 
 
 def generateSolidColorPixmap(w, h, color):
@@ -265,9 +270,32 @@ class HsvWidget(QWidget):
         self.cboxDilate.setText(f"Dilate {self.sliderDilation.value()}")
         self.updateMask()
 
+    @pyqtSlot(QImage)
+    def setStream(self, image):
+        # Video in PyQt5 in other thread:
+        # https://stackoverflow.com/questions/44404349/pyqt-showing-video-stream-from-opencv
+        self.imgRaw = cv2.imread(FILE_NAME)
+        self.previewRaw.setPixmap(QPixmap.fromImage(image).scaledToWidth(self.previewRaw.size().width()))
+        self.image_thread.terminate()
+
     def onBtnOpenClicked(self):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.window.video_thread_terminate()
+        self.image_thread = ThreadLoadImage(self.drone)
+        self.image_thread.changePixmap.connect(self.setStream)
+        self.image_thread.start()
+
+
+class ThreadLoadImage(QThread):
+    changePixmap = pyqtSignal(QImage)
+
+    def __init__(self, drone):
+        self.drone = drone
+        self.drone.connect()
+        super().__init__()
+
+    def run(self):
         try:
-            self.drone.connect()
             self.drone.wait_for_connection(60.0)
             retry = 3
             container = None
@@ -288,16 +316,21 @@ class HsvWidget(QWidget):
                     continue
                 image = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
 
-                cv2.imwrite(self.fileName, image)
-                if not self.fileName:
+                cv2.imwrite(FILE_NAME, image)
+                if not FILE_NAME:
                     return
-                self.updateRawImg(cv2.imread(self.fileName))
+                img = cv2.imread(FILE_NAME)
+                h, w, ch = img.shape
+                bytesPerLine = ch * w
+                convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+                self.changePixmap.emit(p)
                 break
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback)
             print(ex)
         finally:
-            self.drone.quit()
-            cv2.destroyAllWindows()
+            QApplication.restoreOverrideCursor()
+            self.drone.land()
 

@@ -47,17 +47,20 @@ class MainWindow(QMainWindow):
         splitter_bottom.addWidget(bottom_frame)
         splitter_bottom.setSizes([300, 50])
 
-        self.btn_connect = QPushButton("Connect")
+        self.btn_connect = QPushButton("Take off")
         self.btn_connect.clicked.connect(self.button_connect)
-        self.btn_disconnect = QPushButton("Disconnect")
+        self.btn_stream = QPushButton("Start stream")
+        self.btn_stream.clicked.connect(self.button_stream)
+        self.btn_disconnect = QPushButton("Stop")
         self.btn_disconnect.clicked.connect(self.button_disconnect)
-        self.btn_battery = QPushButton("Check battery")
+        self.btn_battery = QPushButton("State")
         self.btn_battery.clicked.connect(self.button_check_battery)
         self.btn_refresh = QPushButton("Refresh")
         self.btn_refresh.clicked.connect(self.checkWifi)
         layout_left = QVBoxLayout()
         # layout_left.setAlignment(QtCore.Qt.AlignTop)
         layout_left.addWidget(self.btn_connect)
+        layout_left.addWidget(self.btn_stream)
         layout_left.addWidget(self.btn_disconnect)
         layout_left.addWidget(self.btn_battery)
         layout_left.addWidget(self.btn_refresh, alignment=QtCore.Qt.AlignBottom)
@@ -119,6 +122,7 @@ class MainWindow(QMainWindow):
         else:
             self.addNewLogLine("TELLO drone is not connected. Hit refresh to check again")
             self.btn_connect.setDisabled(True)
+            self.btn_stream.setDisabled(True)
             self.btn_disconnect.setDisabled(True)
             self.btn_battery.setDisabled(True)
 
@@ -129,21 +133,27 @@ class MainWindow(QMainWindow):
         self.tab_1.setPixmap(QPixmap.fromImage(image))
 
     def button_connect(self):
-        self.btn_connect.setDisabled(True)
+        drone.connect()
+        drone.takeoff()
+
+    def button_stream(self):
         self.addNewLogLine("Starting video stream...")
         self.video_thread = ThreadRunStream(self, self.colorUpper, self.colorLower)
         self.video_thread.changePixmap.connect(self.setStream)
         self.video_thread.start()
 
+
+    def video_thread_terminate(self):
+        self.video_thread.terminate()
+
     def button_disconnect(self):
-        self.btn_connect.setDisabled(False)
         self.addNewLogLine("Video stream paused. Hit 'Connect' to resume")
         self.video_thread.terminate()
         drone.land()
 
     def button_check_battery(self):
         drone.connect()
-        self.addNewLogLine(f"Battery level: {drone.state}%")
+        self.addNewLogLine(f"{drone.state}".replace("::", " "))
 
 
 class ThreadRunStream(QThread):
@@ -159,8 +169,6 @@ class ThreadRunStream(QThread):
     def run(self):
 
         try:
-            drone.connect()
-            drone.takeoff()
             drone.wait_for_connection(60.0)
 
             retry = 3
@@ -175,7 +183,10 @@ class ThreadRunStream(QThread):
 
             # skip first 300 frames
             frame_skip = 300
+            count = 0
             while True:
+                count += 1
+                print(f"Count::{count}")
                 for frame in container.decode(video=0):
                     if 0 < frame_skip:
                         frame_skip = frame_skip - 1
@@ -184,7 +195,7 @@ class ThreadRunStream(QThread):
                     img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
                     # cv2.imshow('Original', image)
                     # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
-                    cv2.waitKey(1)
+                    # cv2.waitKey(1)
                     if frame.time_base < 1.0 / 60:
                         time_base = 1.0 / 60
                     else:
