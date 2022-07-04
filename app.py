@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.addNewLogLine("Starting video stream...")
         self.video_thread = ThreadRunStream.instance()
-        self.video_thread.set_params(drone, self.colorUpper, self.colorLower)
+        self.video_thread.set_params(self, drone, self.colorUpper, self.colorLower)
         self.video_thread.videoStream.connect(self.setStream)
         self.video_thread.start()
 
@@ -155,9 +155,9 @@ class MainWindow(QMainWindow):
     def button_check_battery(self):
         drone.connect()
         self.addNewLogLine(f"{drone.state}".replace("::", " "))
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
 
     def closeEvent(self, event):
-        # do stuff
         self.video_thread.terminate()
         event.accept() # let the window close
 

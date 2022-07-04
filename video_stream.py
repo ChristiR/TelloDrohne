@@ -35,8 +35,9 @@ class ThreadRunStream(QThread):
         self.emit_one_pic = False
         super().__init__()
 
-    def set_params(self, drone, upper, lower):
+    def set_params(self, main_window, drone, upper, lower):
         drone.connect()
+        self.main_window = main_window
         self.drone = drone
         self.colorUpper = upper
         self.colorLower = lower
@@ -119,7 +120,9 @@ class ThreadRunStream(QThread):
             print(ex)
         finally:
             self.drone.quit()
-            cv2.destroyAllWindows()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            self.main_window.checkWifi()
+            self.main_window.addNewLogLine("Could not connect to drone")
 
 
     def set_emit_one_pic(self):
