@@ -114,10 +114,8 @@ class HsvWidget(QWidget):
         self.sliderDilation.valueChanged.connect(self.onSliderDilateChanged)
 
     def onBtnCopyClicked(self):
-        print("Upper HSV: ", self.upperHSV)
-        print("Lower HSV: ", self.lowerHSV)
         self.window.updateLowerUpper(self.upperHSV, self.lowerHSV)
-        self.window.addNewLogLine(f"New Upper {self.upperHSV} new Lower {self.lowerHSV}")
+        self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
         with open('hsv.json', 'w', encoding='utf-8') as f:
             json_data = {
                 "hsv":
@@ -271,66 +269,17 @@ class HsvWidget(QWidget):
         self.updateMask()
 
     @pyqtSlot(QImage)
-    def setStream(self, image):
+    def setImg(self, image):
         # Video in PyQt5 in other thread:
         # https://stackoverflow.com/questions/44404349/pyqt-showing-video-stream-from-opencv
         self.imgRaw = cv2.imread(FILE_NAME)
         self.previewRaw.setPixmap(QPixmap.fromImage(image).scaledToWidth(self.previewRaw.size().width()))
-        self.image_thread.terminate()
 
     def onBtnOpenClicked(self):
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        self.window.video_thread_terminate()
-        self.image_thread = ThreadLoadImage(self.drone)
-        self.image_thread.changePixmap.connect(self.setStream)
-        self.image_thread.start()
-
-
-class ThreadLoadImage(QThread):
-    changePixmap = pyqtSignal(QImage)
-
-    def __init__(self, drone):
-        self.drone = drone
-        self.drone.connect()
-        super().__init__()
-
-    def run(self):
         try:
-            self.drone.wait_for_connection(60.0)
-            retry = 3
-            container = None
-            while container is None and 0 < retry:
-                retry -= 1
-                try:
-                    container = av.open(self.drone.get_video_stream())
-                except av.AVError as ave:
-                    print(ave)
-                    print('retry...')
-
-            # skip first 300 frames
-            frame_skip = 300
-            # while True:
-            for frame in container.decode(video=0):
-                if 0 < frame_skip:
-                    frame_skip = frame_skip - 1
-                    continue
-                image = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-
-                cv2.imwrite(FILE_NAME, image)
-                if not FILE_NAME:
-                    return
-                img = cv2.imread(FILE_NAME)
-                h, w, ch = img.shape
-                bytesPerLine = ch * w
-                convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
-                p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
-                self.changePixmap.emit(p)
-                break
+            self.image_thread = self.window.video_thread
+            self.image_thread.hsvImage.connect(self.setImg)
+            self.image_thread.set_emit_one_pic()
         except Exception as ex:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_traceback)
-            print(ex)
-        finally:
-            QApplication.restoreOverrideCursor()
-            self.drone.land()
+            self.window.addNewLogLine(f"Video stream must be running")
 

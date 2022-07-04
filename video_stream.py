@@ -1,0 +1,158 @@
+import sys
+
+import imutils
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtWidgets import *
+from PyQt5 import Qt
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QImage, QPixmap
+from djitellopy import tello
+import cv2
+
+import sys
+import traceback
+import tellopy
+import av
+import numpy
+import time
+
+import subprocess
+
+from hsv_widget import *
+from utils import *
+
+FILE_NAME = "picture.png"
+
+
+@Singleton
+# singleton is needed here, otherwise ther will be an error when clicking on "Start stream" multiple times
+# ( -> multiple instances of the this thread doesnt work)
+class ThreadRunStream(QThread):
+    videoStream = pyqtSignal(QImage)
+    hsvImage = pyqtSignal(QImage)
+
+    def __init__(self):
+        self.emit_one_pic = False
+        super().__init__()
+
+    def set_params(self, drone, upper, lower):
+        drone.connect()
+        self.drone = drone
+        self.colorUpper = upper
+        self.colorLower = lower
+
+    def run(self):
+
+        try:
+            self.drone.wait_for_connection(60.0)
+
+            retry = 3
+            container = None
+            while container is None and 0 < retry:
+                retry -= 1
+                try:
+                    container = av.open(self.drone.get_video_stream())
+                except av.AVError as ave:
+                    print(ave)
+                    print('retry...')
+
+            # skip first 300 frames
+            frame_skip = 300
+            while True:
+                for frame in container.decode(video=0):
+                    if 0 < frame_skip:
+                        frame_skip = frame_skip - 1
+                        continue
+                    start_time = time.time()
+                    img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+                    # cv2.imshow('Original', image)
+                    # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
+                    # cv2.waitKey(1)
+                    if frame.time_base < 1.0 / 60:
+                        time_base = 1.0 / 60
+                    else:
+                        time_base = frame.time_base
+                    frame_skip = int((time.time() - start_time) / time_base)
+
+                    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+                    mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
+                    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    cnts = imutils.grab_contours(cnts)
+                    center = None
+                    radius = None
+                    if len(cnts) > 0:
+                        # find the largest contour in the mask, then use
+                        # it to compute the minimum enclosing circle and
+                        # centroid
+                        c = max(cnts, key=cv2.contourArea)
+                        ((x, y), radius) = cv2.minEnclosingCircle(c)
+                        M = cv2.moments(c)
+                        if M["m00"] != 0:
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                            print(center)
+                            # only proceed if the radius meets a minimum size
+                            if radius > 5:
+                                # draw the circle and centroid on the frame
+                                cv2.circle(img, (int(x), int(y)), int(radius),
+                                           (0, 255, 255), 2)
+                                cv2.circle(img, center, 5, (0, 0, 255), -1)
+                    self.trackball2(self.drone, center, radius)
+                    # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    h, w, ch = img.shape
+                    bytesPerLine = ch * w
+                    convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                    self.p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+
+                    # this is for emitting one pic to the hsv tool
+                    if self.emit_one_pic:
+                        self.emit_one_pic = False
+                        cv2.imwrite(FILE_NAME, img)
+                        self.hsvImage.emit(self.p)
+
+                    self.videoStream.emit(self.p)
+                    # QApplication.restoreOverrideCursor()
+                    QApplication.setOverrideCursor(Qt.ArrowCursor)
+        except Exception as ex:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            print(ex)
+        finally:
+            self.drone.quit()
+            cv2.destroyAllWindows()
+
+
+    def set_emit_one_pic(self):
+        self.emit_one_pic = True
+
+
+    def trackball2(self, me, center, radius):
+        # print(f"BALL: {center} - {radius}")
+        if center is None:
+            self.drone.clockwise(0)
+            self.drone.forward(0)
+        else:
+            width = 640
+            height = 480
+            framecenter = (int(width // 2), int(height // 2))
+            x_distance = center[0] - framecenter[0]
+            x_distance = int(x_distance * 0.1)
+            if x_distance > 100:
+                x_distance = 100
+            if x_distance > 15:
+                self.drone.clockwise(abs(x_distance))
+            elif x_distance < -15:
+                self.drone.counter_clockwise(abs(x_distance))
+            else:
+                self.drone.clockwise(0)
+            # print(radius)
+            if radius > 15 and radius < 50:
+                self.drone.forward(0)
+            elif radius < 15:
+                # velocity = int(50/radius)
+                self.drone.forward(20)
+            elif radius > 50:
+                # velocity = int(40-radius)
+                self.drone.backward(20)
+
+

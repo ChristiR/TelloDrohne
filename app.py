@@ -19,6 +19,7 @@ import time
 import subprocess
 
 from hsv_widget import *
+from video_stream import ThreadRunStream
 
 drone = tellopy.Tello()
 
@@ -117,8 +118,10 @@ class MainWindow(QMainWindow):
         wifi = subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces'])
         if b"TELLO" in wifi:
             self.addNewLogLine("TELLO drone connected")
-            self.btn_battery.setDisabled(False)
             self.btn_connect.setDisabled(False)
+            self.btn_stream.setDisabled(False)
+            self.btn_disconnect.setDisabled(False)
+            self.btn_battery.setDisabled(False)
         else:
             self.addNewLogLine("TELLO drone is not connected. Hit refresh to check again")
             self.btn_connect.setDisabled(True)
@@ -137,143 +140,26 @@ class MainWindow(QMainWindow):
         drone.takeoff()
 
     def button_stream(self):
+        QApplication.processEvents()
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         self.addNewLogLine("Starting video stream...")
-        self.video_thread = ThreadRunStream(self, self.colorUpper, self.colorLower)
-        self.video_thread.changePixmap.connect(self.setStream)
+        self.video_thread = ThreadRunStream.instance()
+        self.video_thread.set_params(drone, self.colorUpper, self.colorLower)
+        self.video_thread.videoStream.connect(self.setStream)
         self.video_thread.start()
 
-
-    def video_thread_terminate(self):
-        self.video_thread.terminate()
-
     def button_disconnect(self):
-        self.addNewLogLine("Video stream paused. Hit 'Connect' to resume")
-        self.video_thread.terminate()
+        self.addNewLogLine("Landing...")
         drone.land()
 
     def button_check_battery(self):
         drone.connect()
         self.addNewLogLine(f"{drone.state}".replace("::", " "))
 
-
-class ThreadRunStream(QThread):
-    changePixmap = pyqtSignal(QImage)
-
-    def __init__(self, main_window, upper, lower):
-        self.colorUpper = upper
-        self.colorLower = lower
-        self.main_window = main_window
-        drone.connect()
-        super().__init__()
-
-    def run(self):
-
-        try:
-            drone.wait_for_connection(60.0)
-
-            retry = 3
-            container = None
-            while container is None and 0 < retry:
-                retry -= 1
-                try:
-                    container = av.open(drone.get_video_stream())
-                except av.AVError as ave:
-                    print(ave)
-                    print('retry...')
-
-            # skip first 300 frames
-            frame_skip = 300
-            count = 0
-            while True:
-                count += 1
-                print(f"Count::{count}")
-                for frame in container.decode(video=0):
-                    if 0 < frame_skip:
-                        frame_skip = frame_skip - 1
-                        continue
-                    start_time = time.time()
-                    img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
-                    # cv2.imshow('Original', image)
-                    # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
-                    # cv2.waitKey(1)
-                    if frame.time_base < 1.0 / 60:
-                        time_base = 1.0 / 60
-                    else:
-                        time_base = frame.time_base
-                    frame_skip = int((time.time() - start_time) / time_base)
-
-                    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-                    mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
-                    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                    cnts = imutils.grab_contours(cnts)
-                    center = None
-                    radius = None
-                    if len(cnts) > 0:
-                        # find the largest contour in the mask, then use
-                        # it to compute the minimum enclosing circle and
-                        # centroid
-                        c = max(cnts, key=cv2.contourArea)
-                        ((x, y), radius) = cv2.minEnclosingCircle(c)
-                        M = cv2.moments(c)
-                        if M["m00"] != 0:
-                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                            print(center)
-                            # only proceed if the radius meets a minimum size
-                            if radius > 5:
-                                # draw the circle and centroid on the frame
-                                cv2.circle(img, (int(x), int(y)), int(radius),
-                                           (0, 255, 255), 2)
-                                cv2.circle(img, center, 5, (0, 0, 255), -1)
-                    self.trackball2(drone, center, radius)
-                    # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    h, w, ch = img.shape
-                    bytesPerLine = ch * w
-                    convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
-                    p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
-                    self.changePixmap.emit(p)
-
-            # if b"TELLO" not in subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces']):
-            #     self.main_window.addNewLogLine("TELLO drone disconnected")
-            #     self.keep_running = False
-
-        except Exception as ex:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_traceback)
-            print(ex)
-        finally:
-            drone.quit()
-            cv2.destroyAllWindows()
-
-
-    def trackball2(self, me, center, radius):
-        print(f"BALL: {center} - {radius}")
-        if center is None:
-            drone.clockwise(0)
-            drone.forward(0)
-        else:
-            width = 640
-            height = 480
-            framecenter = (int(width // 2), int(height // 2))
-            x_distance = center[0] - framecenter[0]
-            x_distance = int(x_distance * 0.1)
-            if x_distance > 100:
-                x_distance = 100
-            if x_distance > 15:
-                drone.clockwise(abs(x_distance))
-            elif x_distance < -15:
-                drone.counter_clockwise(abs(x_distance))
-            else:
-                drone.clockwise(0)
-            # print(radius)
-            if radius > 15 and radius < 50:
-                drone.forward(0)
-            elif radius < 15:
-                # velocity = int(50/radius)
-                drone.forward(20)
-            elif radius > 50:
-                # velocity = int(40-radius)
-                drone.backward(20)
+    def closeEvent(self, event):
+        # do stuff
+        self.video_thread.terminate()
+        event.accept() # let the window close
 
 
 if __name__ == '__main__':
