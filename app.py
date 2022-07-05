@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
     def initUI(self):
         self.colorUpper = (74, 203, 164)
         self.colorLower = (62, 89, 75)
-
+        self.video_thread = None
         self.setWindowTitle("Tello Drohne")
         left_frame = QFrame(self)
         left_frame.setFrameShape(QFrame.StyledPanel)
@@ -112,7 +112,8 @@ class MainWindow(QMainWindow):
     def updateLowerUpper(self, lower, upper):
         self.colorLower = lower
         self.colorUpper = upper
-        self.video_thread.updateLowerUpper(self.colorLower, self.colorUpper)
+        if self.video_thread is not None:
+            self.video_thread.updateLowerUpper(self.colorLower, self.colorUpper)
 
     def addNewLogLine(self, text):
         self.loggingTextBox.appendPlainText(text)

@@ -44,12 +44,13 @@ class ThreadRunStream(QThread):
     def updateLowerUpper(self, lower, upper):
         self.colorLower = lower
         self.colorUpper = upper
+        print("UPDSATED")
+        print(self.colorLower)
+        print(self.colorUpper)
 
     def run(self):
-
         try:
             self.drone.wait_for_connection(60.0)
-
             retry = 3
             container = None
             while container is None and 0 < retry:
@@ -92,12 +93,13 @@ class ThreadRunStream(QThread):
 
                     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
                     mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
+                    print(self.colorLower)
+                    print(self.colorUpper)
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     cnts = imutils.grab_contours(cnts)
+
                     center = None
                     radius = None
-
-
                     if len(cnts) > 0:
                         # find the largest contour in the mask, then use
                         # it to compute the minimum enclosing circle and
@@ -107,7 +109,6 @@ class ThreadRunStream(QThread):
                         M = cv2.moments(c)
                         if M["m00"] != 0:
                             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                            print(center)
                             # only proceed if the radius meets a minimum size
                             if radius > 5:
                                 # draw the circle and centroid on the frame
@@ -121,10 +122,6 @@ class ThreadRunStream(QThread):
                     bytesPerLine = ch * w
                     convertToQtFormat = QImage(img_new.data, w, h, bytesPerLine, QImage.Format_RGB888)
                     p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
-
-
-
-
                     self.videoStream.emit(p)
                     # QApplication.restoreOverrideCursor()
                     QApplication.setOverrideCursor(Qt.ArrowCursor)
