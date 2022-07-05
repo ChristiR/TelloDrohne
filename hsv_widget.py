@@ -130,6 +130,7 @@ class HsvWidget(QWidget):
 
     # =========== Helper ===========
     def updatePreviewHsvSpace(self):
+        # refreshes the box on the bottom left in the HSV tab
         if self.imgHsvSpace is None:
             return
 
@@ -177,20 +178,15 @@ class HsvWidget(QWidget):
     def updateRawImg(self, img):
         # _dsize = (self.previewRaw.size().height(),
         #           self.previewRaw.size().width())
-
         self.imgRaw = img
-
         _imgAsQImg = QImage(self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
-
         # self.imgRaw = img.scaled(200,100, QtCore.KeepAspectRatio)
         # self.imgRaw = img.scaledToHeight(self.previewMask.size().height())
-        self.previewRaw.setPixmap(QPixmap.fromImage(
-            _imgAsQImg).scaledToWidth(self.previewRaw.size().width()))
+        self.previewRaw.setPixmap(QPixmap.fromImage(_imgAsQImg).scaledToWidth(self.previewRaw.size().width()))
 
     def updateMask(self):
         if self.imgRaw is None:
             return
-
         frame_HSV = cv2.cvtColor(self.imgRaw, cv2.COLOR_BGR2HSV)
         lower_orange = np.array(self.lowerHSV)
         upper_orange = np.array(self.upperHSV)
@@ -216,9 +212,9 @@ class HsvWidget(QWidget):
         self.previewMask.setPixmap(QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMask.size().height()))
 
     def updateMaskedRaw(self, masking):
+        # refreshes the box on the bottom right in the HSV tab
         if self.imgRaw is None:
             return
-
         frame_threshold = cv2.bitwise_and(self.imgRaw, self.imgRaw, mask=masking)
         _asQImage = QImage(
             frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1] * 3,

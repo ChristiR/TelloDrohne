@@ -25,7 +25,7 @@ FILE_NAME = "picture.png"
 
 
 @Singleton
-# singleton is needed here, otherwise ther will be an error when clicking on "Start stream" multiple times
+# singleton is needed here, otherwise there will be an error when clicking on "Start stream" multiple times
 # ( -> multiple instances of the this thread doesnt work)
 class ThreadRunStream(QThread):
     videoStream = pyqtSignal(QImage)
@@ -40,6 +40,10 @@ class ThreadRunStream(QThread):
         self.drone = drone
         self.colorUpper = upper
         self.colorLower = lower
+
+    def updateLowerUpper(self, lower, upper):
+        self.colorLower = lower
+        self.colorUpper = upper
 
     def run(self):
 
@@ -65,6 +69,18 @@ class ThreadRunStream(QThread):
                         continue
                     start_time = time.time()
                     img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
+
+                    # this is for emitting one pic to the hsv tool
+                    if self.emit_one_pic:
+                        self.emit_one_pic = False
+                        cv2.imwrite(FILE_NAME, img)
+                        img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        h, w, ch = img_new.shape
+                        bytesPerLine = ch * w
+                        convertToQtFormat = QImage(img_new.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                        p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+                        self.hsvImage.emit(p)
+
                     # cv2.imshow('Original', image)
                     # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
                     # cv2.waitKey(1)
@@ -80,6 +96,8 @@ class ThreadRunStream(QThread):
                     cnts = imutils.grab_contours(cnts)
                     center = None
                     radius = None
+
+
                     if len(cnts) > 0:
                         # find the largest contour in the mask, then use
                         # it to compute the minimum enclosing circle and
@@ -98,26 +116,24 @@ class ThreadRunStream(QThread):
                                 cv2.circle(img, center, 5, (0, 0, 255), -1)
                     self.trackball2(self.drone, center, radius)
                     # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    h, w, ch = img.shape
+                    img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    h, w, ch = img_new.shape
                     bytesPerLine = ch * w
-                    convertToQtFormat = QImage(img.data, w, h, bytesPerLine, QImage.Format_RGB888)
-                    self.p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
-
-                    # this is for emitting one pic to the hsv tool
-                    if self.emit_one_pic:
-                        self.emit_one_pic = False
-                        cv2.imwrite(FILE_NAME, img)
-                        self.hsvImage.emit(self.p)
+                    convertToQtFormat = QImage(img_new.data, w, h, bytesPerLine, QImage.Format_RGB888)
+                    p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
 
 
-                    self.videoStream.emit(self.p)
+
+
+                    self.videoStream.emit(p)
                     # QApplication.restoreOverrideCursor()
                     QApplication.setOverrideCursor(Qt.ArrowCursor)
+
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback)
             print(ex)
+            self.main_window.addNewLogLine(ex)
         finally:
             self.drone.quit()
             QApplication.setOverrideCursor(Qt.ArrowCursor)

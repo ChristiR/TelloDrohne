@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
         self.right_widget = QTabWidget()
         self.right_widget.addTab(self.tab_1, "Video stream")
         self.right_widget.addTab(self.tab_2, "HSV Color")
-        self.right_widget.setTabEnabled(1,False)
+        # self.right_widget.setTabEnabled(1, False)
 
         # self.label.setAlignment(Qt.AlignCenter)
         self.tab_1.setContentsMargins(0, 0, 0, 0)
@@ -112,6 +112,7 @@ class MainWindow(QMainWindow):
     def updateLowerUpper(self, lower, upper):
         self.colorLower = lower
         self.colorUpper = upper
+        self.video_thread.updateLowerUpper(self.colorLower, self.colorUpper)
 
     def addNewLogLine(self, text):
         self.loggingTextBox.appendPlainText(text)
@@ -143,7 +144,7 @@ class MainWindow(QMainWindow):
         drone.takeoff()
         self.btn_disconnect.setDisabled(False)
         self.btn_connect.setDisabled(True)
-        self.right_widget.setTabEnabled(1,False)
+        self.right_widget.setTabEnabled(1, False)
         #self.video_thread.setstartroutine(self)
 
 
