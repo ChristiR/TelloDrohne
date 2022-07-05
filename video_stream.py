@@ -112,9 +112,30 @@ class ThreadRunStream(QThread):
                             # only proceed if the radius meets a minimum size
                             if radius > 5:
                                 # draw the circle and centroid on the frame
-                                cv2.circle(img, (int(x), int(y)), int(radius),
-                                           (0, 255, 255), 2)
-                                cv2.circle(img, center, 5, (0, 0, 255), -1)
+                                cv2.circle(img, (int(x), int(y)), int(radius), (0, 255, 0), 2)
+                                cv2.circle(img, center, 5, (0, 255, 0), -1)
+
+                    img = cv2.medianBlur(img, 5)
+                    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+                    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 10000, param1=50, param2=70, minRadius=20, maxRadius=400)
+                    print(f"CirclesHSV:   {center} - {radius}")
+                    print(f"CirclesHough: {circles}")
+                    if circles is not None:
+                        for i in circles[0, :]:
+                            cv2.circle(img, (int(i[0]), int(i[1])), int(i[2]), (0, 0, 255), 2) # draw the outer circle
+                            cv2.circle(img, (int(i[0]), int(i[1])), 2, (0, 0, 255), 3) # draw the center of the circle
+
+                            if radius is None:
+                                center = (int(i[0]), int(i[1]))
+                                radius = int(i[2])
+                                print("HSV--NONE")
+                            if int(i[2]) > radius:
+                                center = (int(i[0]), int(i[1]))
+                                radius = int(i[2])
+                                print("HSV--smaller")
+
+
+                    print(f"CircleUsed:   {center} - {radius}")
                     self.trackball2(self.drone, center, radius)
                     # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
                     img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -125,12 +146,14 @@ class ThreadRunStream(QThread):
                     self.videoStream.emit(p)
                     # QApplication.restoreOverrideCursor()
                     QApplication.setOverrideCursor(Qt.ArrowCursor)
-
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback)
             print(ex)
-            self.main_window.addNewLogLine(ex)
+            error_msg = str(exc_value)
+            if "End of file" in error_msg:
+                self.main_window.addNewLogLine("An internal error occured. Probably the drone turned off")
+            self.main_window.addNewLogLine(f"ERROR: {error_msg}")
         finally:
             self.drone.quit()
             QApplication.setOverrideCursor(Qt.ArrowCursor)
