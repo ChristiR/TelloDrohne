@@ -50,10 +50,12 @@ class MainWindow(QMainWindow):
 
         self.btn_connect = QPushButton("Take off")
         self.btn_connect.clicked.connect(self.button_connect)
+        self.btn_connect.setDisabled(True)
         self.btn_stream = QPushButton("Start stream")
         self.btn_stream.clicked.connect(self.button_stream)
         self.btn_disconnect = QPushButton("Stop")
         self.btn_disconnect.clicked.connect(self.button_disconnect)
+        self.btn_disconnect.setDisabled(True)
         self.btn_battery = QPushButton("State")
         self.btn_battery.clicked.connect(self.button_check_battery)
         self.btn_refresh = QPushButton("Refresh")
@@ -73,6 +75,7 @@ class MainWindow(QMainWindow):
         self.right_widget = QTabWidget()
         self.right_widget.addTab(self.tab_1, "Video stream")
         self.right_widget.addTab(self.tab_2, "HSV Color")
+        self.right_widget.setTabEnabled(1,False)
 
         # self.label.setAlignment(Qt.AlignCenter)
         self.tab_1.setContentsMargins(0, 0, 0, 0)
@@ -118,9 +121,9 @@ class MainWindow(QMainWindow):
         wifi = subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces'])
         if b"TELLO" in wifi:
             self.addNewLogLine("TELLO drone connected")
-            self.btn_connect.setDisabled(False)
+            #self.btn_connect.setDisabled(False)
             self.btn_stream.setDisabled(False)
-            self.btn_disconnect.setDisabled(False)
+            #self.btn_disconnect.setDisabled(False)
             self.btn_battery.setDisabled(False)
         else:
             self.addNewLogLine("TELLO drone is not connected. Hit refresh to check again")
@@ -138,6 +141,11 @@ class MainWindow(QMainWindow):
     def button_connect(self):
         drone.connect()
         drone.takeoff()
+        self.btn_disconnect.setDisabled(False)
+        self.btn_connect.setDisabled(True)
+        self.right_widget.setTabEnabled(1,False)
+        #self.video_thread.setstartroutine(self)
+
 
     def button_stream(self):
         QApplication.processEvents()
@@ -147,9 +155,15 @@ class MainWindow(QMainWindow):
         self.video_thread.set_params(self, drone, self.colorUpper, self.colorLower)
         self.video_thread.videoStream.connect(self.setStream)
         self.video_thread.start()
+        self.btn_connect.setDisabled(False)
+        self.right_widget.setTabEnabled(1,True)
+        self.btn_stream.setDisabled(True)
 
     def button_disconnect(self):
         self.addNewLogLine("Landing...")
+        self.btn_connect.setDisabled(False)
+        self.btn_disconnect.setDisabled(True)
+        self.right_widget.setTabEnabled(1,True)
         drone.land()
 
     def button_check_battery(self):

@@ -30,7 +30,6 @@ FILE_NAME = "picture.png"
 class ThreadRunStream(QThread):
     videoStream = pyqtSignal(QImage)
     hsvImage = pyqtSignal(QImage)
-
     def __init__(self):
         self.emit_one_pic = False
         super().__init__()
@@ -111,6 +110,7 @@ class ThreadRunStream(QThread):
                         cv2.imwrite(FILE_NAME, img)
                         self.hsvImage.emit(self.p)
 
+
                     self.videoStream.emit(self.p)
                     # QApplication.restoreOverrideCursor()
                     QApplication.setOverrideCursor(Qt.ArrowCursor)
@@ -157,5 +157,4 @@ class ThreadRunStream(QThread):
             elif radius > 50:
                 # velocity = int(40-radius)
                 self.drone.backward(20)
-
 
