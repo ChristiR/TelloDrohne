@@ -200,14 +200,14 @@ class ThreadRunStream(QThread):
                 if radius < 20:
                     velocity = 100
                 else:
-                    velocity = (100/15)*(radius-20)
+                    velocity = int((100/15)*(radius-20))
                 # velocity = int(50/radius)
                 self.drone.forward(velocity)
             elif radius > 50:
                 if radius > 100:
                     velocity = 100
                 else:
-                    velocity = (100/50)*(radius-50)
+                    velocity = int((100/50)*(radius-50))
                 # velocity = int(40-radius)
                 self.drone.backward(velocity)
 
