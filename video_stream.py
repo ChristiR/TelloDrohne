@@ -178,42 +178,50 @@ class ThreadRunStream(QThread):
 
             # rotation of drone
             x_distance = center[0] - framecenter[0]
-            x_distance = int(x_distance * 0.1)
-            if x_distance > 100:
-                x_distance = 100
-            if x_distance < -100:
-                x_distance = -100
-            x_distance = 0
-            if x_distance > 15:
-                self.drone.clockwise(abs(x_distance))
-            elif x_distance < -15:
-                self.drone.counter_clockwise(abs(x_distance))
+            #x_distance = int(x_distance * 0.1)
+
+
+            #x_distance = 0
+            if x_distance > 20:
+                if x_distance > 100:
+                    velocity = 100
+                else:
+                    velocity = int((100/80)*(x_distance-20))
+                self.drone.clockwise(abs(velocity))
+            elif x_distance < -20:
+                if x_distance < -100:
+                    velocity = -100
+                else:
+                    velocity = int((100/80) * (x_distance+20))
+                self.drone.counter_clockwise(abs(velocity))
             else:
-                self.drone.clockwise(0)
+                velocity = 0
+                self.drone.clockwise(velocity)
 
             # forward and backward flying
-            #radius = 42
+            radius = 42
 
-            if radius > 35 and radius < 50:
-                self.drone.forward(0)
-            elif radius < 35:
+            if radius > 40 and radius < 70:
+                velocity = 0
+                self.drone.forward(velocity)
+            elif radius < 40:
                 if radius < 20:
-                    velocity = 100
+                    velocity = 60
                 else:
-                    velocity = int((100/15)*(radius-20))
+                    velocity = int((60/20)*(radius-20))
                 # velocity = int(50/radius)
                 self.drone.forward(velocity)
-            elif radius > 50:
-                if radius > 100:
-                    velocity = 100
+            elif radius > 70:
+                if radius > 200:
+                    velocity = 60
                 else:
-                    velocity = int((100/50)*(radius-50))
+                    velocity = int((60/130)*(radius-70))
                 # velocity = int(40-radius)
                 self.drone.backward(velocity)
 
             # flying up and down
             y_distance = center[1] - framecenter[1]
-            y_distance = int(y_distance * 0.1)
+            #y_distance = int(y_distance * 0.1)
             if y_distance > 100:
                 y_distance = 100
             if y_distance < -100:
