@@ -84,11 +84,6 @@ class HsvWidget(QWidget):
 
         self.cboxSetMode = self.findChild(QComboBox, "cboxSetMode")
 
-        self.cboxErode = self.findChild(QCheckBox, "cboxErode")
-        self.sliderErotion = self.findChild(QSlider, "sliderErotion")
-        self.cboxDilate = self.findChild(QCheckBox, "cboxDilate")
-        self.sliderDilation = self.findChild(QSlider, "sliderDilation")
-
         self.btnOpen = self.findChild(QPushButton, "btnOpen")
         self.btnCopy = self.findChild(QPushButton, "btnCopy")
 
@@ -189,14 +184,6 @@ class HsvWidget(QWidget):
         frame_threshold = cv2.inRange(
             frame_HSV, lower_orange, upper_orange)
 
-        if self.cboxErode.isChecked():
-            _kernel = self.sliderErotion.value()
-            frame_threshold = cv2.erode(frame_threshold, np.ones((_kernel, _kernel), dtype=np.uint8))
-
-        if self.cboxDilate.isChecked():
-            _kernel = self.sliderDilation.value()
-            frame_threshold = cv2.dilate(frame_threshold, np.ones((_kernel, _kernel), dtype=np.uint8))
-
         self.updateMaskedRaw(frame_threshold)
         frame_threshold = cv2.cvtColor(frame_threshold, cv2.COLOR_GRAY2RGB)
 
@@ -250,14 +237,6 @@ class HsvWidget(QWidget):
         _v = self.selectedValue = self.sliderV.value()
         self.lblV.setText(str(_v))
         self.updateHSVPreview()
-
-    def onSliderErodeChanged(self):
-        self.cboxErode.setText(f"Erode {self.sliderErotion.value()}")
-        self.updateMask()
-
-    def onSliderDilateChanged(self):
-        self.cboxDilate.setText(f"Dilate {self.sliderDilation.value()}")
-        self.updateMask()
 
     @pyqtSlot(QImage)
     def setImg(self, image):
