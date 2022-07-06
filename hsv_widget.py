@@ -108,11 +108,6 @@ class HsvWidget(QWidget):
         self.btnOpen.clicked.connect(self.onBtnOpenClicked)
         self.btnCopy.clicked.connect(self.onBtnCopyClicked)
 
-        self.cboxDilate.stateChanged.connect(self.updateMask)
-        self.cboxErode.stateChanged.connect(self.updateMask)
-        self.sliderErotion.valueChanged.connect(self.onSliderErodeChanged)
-        self.sliderDilation.valueChanged.connect(self.onSliderDilateChanged)
-
     def onBtnCopyClicked(self):
         self.window.updateLowerUpper(self.lowerHSV, self.upperHSV)
         self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
