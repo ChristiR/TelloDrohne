@@ -136,7 +136,7 @@ class ThreadRunStream(QThread):
 
 
                     print(f"CircleUsed:   {center} - {radius}")
-                    self.trackball2(self.drone, center, radius)
+                    self.trackball(center, radius)
                     # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
                     img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     h, w, ch = img_new.shape
@@ -165,26 +165,31 @@ class ThreadRunStream(QThread):
         self.emit_one_pic = True
 
 
-    def trackball2(self, me, center, radius):
-        # print(f"BALL: {center} - {radius}")
+    def trackball(self, center, radius):
         if center is None:
             self.drone.clockwise(0)
             self.drone.forward(0)
+            self.drone.up(0)
         else:
             width = 640
             height = 480
             framecenter = (int(width // 2), int(height // 2))
+
+            # rotation of drone
             x_distance = center[0] - framecenter[0]
             x_distance = int(x_distance * 0.1)
             if x_distance > 100:
                 x_distance = 100
+            if x_distance < 100:
+                x_distance = -100
             if x_distance > 15:
                 self.drone.clockwise(abs(x_distance))
             elif x_distance < -15:
                 self.drone.counter_clockwise(abs(x_distance))
             else:
                 self.drone.clockwise(0)
-            # print(radius)
+
+            # forward and backward flying
             if radius > 15 and radius < 50:
                 self.drone.forward(0)
             elif radius < 15:
@@ -193,4 +198,18 @@ class ThreadRunStream(QThread):
             elif radius > 50:
                 # velocity = int(40-radius)
                 self.drone.backward(20)
+
+            # flying up and down
+            y_distance = center[1] - framecenter[1]
+            y_distance = int(y_distance * 0.1)
+            if y_distance > 100:
+                y_distance = 100
+            if y_distance < 100:
+                y_distance = -100
+            if y_distance > 15:
+                self.drone.down(abs(y_distance))
+            elif y_distance < -15:
+                self.drone.up(abs(y_distance))
+            else:
+                self.drone.up(0)
 

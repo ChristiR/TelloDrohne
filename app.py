@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
     def checkWifi(self):
         wifi = subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces'])
         if b"TELLO" in wifi:
-            self.addNewLogLine("TELLO drone connected")
+            self.addNewLogLine("TELLO drone WIFI connected")
             #self.btn_connect.setDisabled(False)
             self.btn_stream.setDisabled(False)
             #self.btn_disconnect.setDisabled(False)

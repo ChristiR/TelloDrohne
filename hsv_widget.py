@@ -114,7 +114,7 @@ class HsvWidget(QWidget):
         self.sliderDilation.valueChanged.connect(self.onSliderDilateChanged)
 
     def onBtnCopyClicked(self):
-        self.window.updateLowerUpper(self.upperHSV, self.lowerHSV)
+        self.window.updateLowerUpper(self.lowerHSV, self.upperHSV)
         self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
         with open('hsv.json', 'w', encoding='utf-8') as f:
             json_data = {
