@@ -172,6 +172,7 @@ class MainWindow(QMainWindow):
         drone.connect()
         self.addNewLogLine(f"{drone.state}".replace("::", " "))
         QApplication.setOverrideCursor(Qt.ArrowCursor)
+        drone.clockwise(100)
 
     def closeEvent(self, event):
         self.video_thread.terminate()

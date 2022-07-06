@@ -108,10 +108,10 @@ class ThreadRunStream(QThread):
                         ((x, y), radius) = cv2.minEnclosingCircle(c)
                         M = cv2.moments(c)
                         if M["m00"] != 0:
-                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                             # only proceed if the radius meets a minimum size
-                            if radius > 5:
+                            if radius > 20:
                                 # draw the circle and centroid on the frame
+                                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                                 cv2.circle(img, (int(x), int(y)), int(radius), (0, 255, 0), 2)
                                 cv2.circle(img, center, 5, (0, 255, 0), -1)
 
@@ -183,6 +183,7 @@ class ThreadRunStream(QThread):
                 x_distance = 100
             if x_distance < 100:
                 x_distance = -100
+            #x_distance = 0
             if x_distance > 15:
                 self.drone.clockwise(abs(x_distance))
             elif x_distance < -15:
@@ -191,12 +192,13 @@ class ThreadRunStream(QThread):
                 self.drone.clockwise(0)
 
             # forward and backward flying
-            if radius > 15 and radius < 50:
+            radius = 42
+            if radius > 25 and radius < 50:
                 self.drone.forward(0)
-            elif radius < 15:
+            elif radius < 40:
                 # velocity = int(50/radius)
                 self.drone.forward(20)
-            elif radius > 50:
+            elif radius > 45:
                 # velocity = int(40-radius)
                 self.drone.backward(20)
 
@@ -207,6 +209,7 @@ class ThreadRunStream(QThread):
                 y_distance = 100
             if y_distance < 100:
                 y_distance = -100
+            y_distance = 0
             if y_distance > 15:
                 self.drone.down(abs(y_distance))
             elif y_distance < -15:
