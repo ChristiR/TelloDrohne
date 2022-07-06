@@ -181,7 +181,7 @@ class ThreadRunStream(QThread):
             x_distance = int(x_distance * 0.1)
             if x_distance > 100:
                 x_distance = 100
-            if x_distance < 100:
+            if x_distance < -100:
                 x_distance = -100
             #x_distance = 0
             if x_distance > 15:
@@ -192,7 +192,7 @@ class ThreadRunStream(QThread):
                 self.drone.clockwise(0)
 
             # forward and backward flying
-            radius = 42
+            #radius = 42
             if radius > 25 and radius < 50:
                 self.drone.forward(0)
             elif radius < 40:
@@ -207,9 +207,9 @@ class ThreadRunStream(QThread):
             y_distance = int(y_distance * 0.1)
             if y_distance > 100:
                 y_distance = 100
-            if y_distance < 100:
+            if y_distance < -100:
                 y_distance = -100
-            y_distance = 0
+            #y_distance = 0
             if y_distance > 15:
                 self.drone.down(abs(y_distance))
             elif y_distance < -15:
