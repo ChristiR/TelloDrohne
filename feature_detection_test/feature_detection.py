@@ -10,7 +10,7 @@ import numpy
 import time
 
 # generate keypoints of sample
-img1 = cv2.imread("0.jpg", 0)
+img1 = cv2.imread("0.png", 0)
 orb = cv2.ORB_create(nfeatures=2000)
 kp1, des1 = orb.detectAndCompute(img1, None)
 
@@ -61,21 +61,29 @@ def main():
 
                 # img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
                 # imgKp1 = cv2.drawKeypoints(img1, kp1, None)
-                img2 = cv2.drawKeypoints(img2, kp2, None)
 
                 # cv2.imshow("2", img2)
-                if len(good) > 20:
-                    x = []
-                    y = []
-                    for match in good:
-                        # p1 = kp1[match[0].queryIdx].pt
-                        p2 = kp2[match[0].trainIdx].pt
-                        x.append(p2[0])
-                        y.append(p2[1])
 
+                x = []
+                y = []
+                for match in good:
+                    # p1 = kp1[match[0].queryIdx].pt
+                    p2 = kp2[match[0].trainIdx].pt
+                    x.append(p2[0])
+                    y.append(p2[1])
+
+
+
+
+                img2 = cv2.drawKeypoints(img2, kp2, None)
+
+                for i in range(len(x)):
+                    cv2.circle(img2, (int(x[i]), int(y[i])), 4, (0, 0, 255), 8)  # center
+
+
+                if len(good) > 20:
                     centroid = (sum(x) / len(x), sum(y) / len(y))
-                    cv2.circle(img2, (int(centroid[0]), int(centroid[1])), 10, (0, 255, 0), 10)
-                    # cv2.imshow(f"{image}", img3)
+                    cv2.circle(img2, (int(centroid[0]), int(centroid[1])), 10, (0, 255, 0), 10) # center
 
 
 
