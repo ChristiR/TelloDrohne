@@ -183,7 +183,6 @@ class ThreadRunStream(QThread):
             self.turn = self.turn + 1
             if self.turn == 2:
                 self.turn = 0
-            print("TUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUURN " + str(self.turn))
             if self.turn == 0:
                 # rotation of drone
                 # x_distance = 0
