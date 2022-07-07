@@ -30,6 +30,7 @@ FILE_NAME = "picture.png"
 class ThreadRunStream(QThread):
     videoStream = pyqtSignal(QImage)
     hsvImage = pyqtSignal(QImage)
+    turn = 0
     def __init__(self):
         self.emit_one_pic = False
         super().__init__()
@@ -50,7 +51,6 @@ class ThreadRunStream(QThread):
 
     def run(self):
         try:
-            turn = 0
             self.drone.wait_for_connection(60.0)
             retry = 3
             container = None
@@ -138,7 +138,7 @@ class ThreadRunStream(QThread):
 
 
                     print(f"CircleUsed:   {center} - {radius}")
-                    self.trackball(center, radius, turn)
+                    self.trackball(center, radius)
                     # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
                     img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     h, w, ch = img_new.shape
@@ -167,7 +167,7 @@ class ThreadRunStream(QThread):
         self.emit_one_pic = True
 
 
-    def trackball(self, center, radius, turn):
+    def trackball(self, center, radius):
         if center is None:
             self.drone.clockwise(0)
             self.drone.forward(0)
@@ -180,11 +180,11 @@ class ThreadRunStream(QThread):
 
             x_distance = center[0] - framecenter[0]
             y_distance = center[1] - framecenter[1]
-            turn= turn + 1
-            if turn == 2:
-                turn = 0
-            print("TUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUURN " +turn)
-            if turn == 0:
+            self.turn = self.turn + 1
+            if self.turn == 2:
+                self.turn = 0
+            print("TUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUURN " + str(self.turn))
+            if self.turn == 0:
                 # rotation of drone
                 # x_distance = 0
                 if x_distance > 30:
@@ -202,7 +202,7 @@ class ThreadRunStream(QThread):
                 else:
                     velocity = 0
                     self.drone.clockwise(velocity)
-            if turn == 1:
+            if self.turn == 1:
                 # forward and backward flying
                 # radius = 42
                 if radius > 40 and radius < 70:
@@ -222,7 +222,7 @@ class ThreadRunStream(QThread):
                         velocity = int((60 / 130) * (radius - 70))
                     # velocity = int(40-radius)
                     self.drone.backward(velocity)
-            if turn == 2:
+            if self.turn == 2:
                 # flying up and down
                 # y_distance = 0
                 if y_distance > 35:
