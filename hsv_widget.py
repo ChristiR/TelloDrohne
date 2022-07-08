@@ -4,18 +4,30 @@ import base64
 
 from PyQt5 import uic
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, QThread
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QFileDialog, QMainWindow, QLabel, QPushButton, QSlider
+from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QFileDialog, QMainWindow, QLabel, QPushButton, QSlider, \
+    QWidget, QHBoxLayout
 import cv2
 import numpy as np
 import os
 
-from djitellopy import tello
+import json
 
-me = tello.Tello()
-me.connect()
-me.streamon()
+import sys
+import traceback
+
+import numpy as np
+import tellopy
+import av
+import cv2
+# import cv2_.cv2 as cv2
+import numpy
+
+FILE_NAME = "picture.png"
 
 
 def generateSolidColorPixmap(w, h, color):
@@ -26,7 +38,7 @@ def generateSolidColorPixmap(w, h, color):
     return canvas
 
 
-class MainWindow(QMainWindow):
+class HsvWidget(QWidget):
     selectedHue = 0
     selectedSaturation = 255
     selectedValue = 255
@@ -40,12 +52,15 @@ class MainWindow(QMainWindow):
 
     imgHsvSpace = None
 
-    def __init__(self):
-        super(MainWindow, self).__init__()
-        uic.loadUi(os.path.join(os.path.dirname(
-            __file__), "./assets/main_window.ui"), self)
+    def __init__(self, window, drone):
+        super(HsvWidget, self).__init__()
+        self.window = window
+        self.drone = drone
+        self.fileName = "picture.png"
+        uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/main_window.ui"), self)
 
         self.sliderH = self.findChild(QSlider, "sliderH")
+        self.sliderH.setMinimumWidth(165)
         self.sliderS = self.findChild(QSlider, "sliderS")
         self.sliderV = self.findChild(QSlider, "sliderV")
 
@@ -61,16 +76,13 @@ class MainWindow(QMainWindow):
         self.previewV = self.findChild(QLabel, "previewV")
 
         self.previewRaw = self.findChild(QLabel, "previewRaw")
+        self.previewRaw.setMinimumWidth(300)
         self.previewMask = self.findChild(QLabel, "previewMask")
         self.previewMaskedRaw = self.findChild(QLabel, "previewMaskedRaw")
+        self.previewMaskedRaw.setMinimumWidth(300)
         self.previewHsvSpace = self.findChild(QLabel, "previewHsvSpace")
 
         self.cboxSetMode = self.findChild(QComboBox, "cboxSetMode")
-
-        self.cboxErode = self.findChild(QCheckBox, "cboxErode")
-        self.sliderErotion = self.findChild(QSlider, "sliderErotion")
-        self.cboxDilate = self.findChild(QCheckBox, "cboxDilate")
-        self.sliderDilation = self.findChild(QSlider, "sliderDilation")
 
         self.btnOpen = self.findChild(QPushButton, "btnOpen")
         self.btnCopy = self.findChild(QPushButton, "btnCopy")
@@ -79,9 +91,10 @@ class MainWindow(QMainWindow):
         self.loadHsvSpace()
         self.updateHSVPreview()
 
+
     def loadHsvSpace(self):
         self.imgHsvSpace = cv2.imread(os.path.join(os.path.dirname(__file__), "assets", "hsv_color.png"))
-        
+
     def init_handler(self):
         self.sliderH.valueChanged.connect(self.onHChanged)
         self.sliderS.valueChanged.connect(self.onSChanged)
@@ -90,17 +103,24 @@ class MainWindow(QMainWindow):
         self.btnOpen.clicked.connect(self.onBtnOpenClicked)
         self.btnCopy.clicked.connect(self.onBtnCopyClicked)
 
-        self.cboxDilate.stateChanged.connect(self.updateMask)
-        self.cboxErode.stateChanged.connect(self.updateMask)
-        self.sliderErotion.valueChanged.connect(self.onSliderErodeChanged)
-        self.sliderDilation.valueChanged.connect(self.onSliderDilateChanged)
-
     def onBtnCopyClicked(self):
-        print("Upper HSV: ", self.upperHSV)
-        print("Lower HSV: ", self.lowerHSV)
+        self.window.updateLowerUpper(self.lowerHSV, self.upperHSV)
+        self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
+        with open('hsv.json', 'w', encoding='utf-8') as f:
+            json_data = {
+                "hsv":
+                    {
+                        "colorUpper": self.upperHSV,
+                        "colorLower": self.lowerHSV
+                    }
+
+            }
+            json.dump(json_data, f, ensure_ascii=False, indent=4)
+
 
     # =========== Helper ===========
     def updatePreviewHsvSpace(self):
+        # refreshes the box on the bottom left in the HSV tab
         if self.imgHsvSpace is None:
             return
 
@@ -113,10 +133,10 @@ class MainWindow(QMainWindow):
 
         frame_threshold = cv2.bitwise_and(self.imgHsvSpace, self.imgHsvSpace, mask=frame_threshold)
         _asQImage = QImage(
-            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1]*3,  QtGui.QImage.Format_RGB888)
+            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1] * 3,
+            QtGui.QImage.Format_RGB888)
         _asQImage = _asQImage.rgbSwapped()
         self.previewHsvSpace.setPixmap(QPixmap.fromImage(_asQImage).scaledToWidth(self.previewMask.size().width()))
-
 
     def updateHSVPreview(self):
         prevH = generateSolidColorPixmap(
@@ -141,28 +161,22 @@ class MainWindow(QMainWindow):
                              self.selectedSaturation, self.selectedValue)
             self.lblLower.setText(
                 f"H {self.lowerHSV[0]}; S {self.lowerHSV[1]}; V {self.lowerHSV[2]}")
-        
+
         self.updateMask()
         self.updatePreviewHsvSpace()
 
     def updateRawImg(self, img):
         # _dsize = (self.previewRaw.size().height(),
         #           self.previewRaw.size().width())
-
         self.imgRaw = img
-
-        _imgAsQImg = QImage(
-            self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
-
+        _imgAsQImg = QImage(self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
         # self.imgRaw = img.scaled(200,100, QtCore.KeepAspectRatio)
         # self.imgRaw = img.scaledToHeight(self.previewMask.size().height())
-        self.previewRaw.setPixmap(QPixmap.fromImage(
-            _imgAsQImg).scaledToWidth(self.previewRaw.size().width()))
+        self.previewRaw.setPixmap(QPixmap.fromImage(_imgAsQImg).scaledToWidth(self.previewRaw.size().width()))
 
     def updateMask(self):
         if self.imgRaw is None:
             return
-
         frame_HSV = cv2.cvtColor(self.imgRaw, cv2.COLOR_BGR2HSV)
         lower_orange = np.array(self.lowerHSV)
         upper_orange = np.array(self.upperHSV)
@@ -170,35 +184,26 @@ class MainWindow(QMainWindow):
         frame_threshold = cv2.inRange(
             frame_HSV, lower_orange, upper_orange)
 
-        if self.cboxErode.isChecked():
-            _kernel = self.sliderErotion.value()
-            frame_threshold = cv2.erode(frame_threshold, np.ones((_kernel, _kernel), dtype=np.uint8))
-        
-        if self.cboxDilate.isChecked():
-            _kernel = self.sliderDilation.value()
-            frame_threshold = cv2.dilate(frame_threshold, np.ones((_kernel, _kernel), dtype=np.uint8))
-
         self.updateMaskedRaw(frame_threshold)
         frame_threshold = cv2.cvtColor(frame_threshold, cv2.COLOR_GRAY2RGB)
 
         _asQImage = QImage(
-            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1]*3,  QtGui.QImage.Format_RGB888)
+            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1] * 3,
+            QtGui.QImage.Format_RGB888)
         _asQImage = _asQImage.rgbSwapped()
         self.previewMask.setPixmap(QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMask.size().height()))
 
-
     def updateMaskedRaw(self, masking):
+        # refreshes the box on the bottom right in the HSV tab
         if self.imgRaw is None:
             return
-
         frame_threshold = cv2.bitwise_and(self.imgRaw, self.imgRaw, mask=masking)
         _asQImage = QImage(
-            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1]*3,  QtGui.QImage.Format_RGB888)
+            frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1] * 3,
+            QtGui.QImage.Format_RGB888)
         _asQImage = _asQImage.rgbSwapped()
-        self.previewMaskedRaw.setPixmap(QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMaskedRaw.size().height()))
-
-
-
+        self.previewMaskedRaw.setPixmap(
+            QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMaskedRaw.size().height()))
 
     # =========== EVENT HANDLER ===========
 
@@ -220,7 +225,7 @@ class MainWindow(QMainWindow):
 
     def onHChanged(self):
         _v = self.selectedHue = self.sliderH.value()
-        self.lblH.setText(str(f"QT5 ({_v}) | cv2 ({_v//2})"))
+        self.lblH.setText(str(f"QT5 ({_v}) | cv2 ({_v // 2})"))
         self.updateHSVPreview()
 
     def onSChanged(self):
@@ -233,32 +238,18 @@ class MainWindow(QMainWindow):
         self.lblV.setText(str(_v))
         self.updateHSVPreview()
 
-    def onSliderErodeChanged(self):
-        self.cboxErode.setText(f"Erode {self.sliderErotion.value()}")
-        self.updateMask()
-
-    def onSliderDilateChanged(self):
-        self.cboxDilate.setText(f"Dilate {self.sliderDilation.value()}")
-        self.updateMask()
+    @pyqtSlot(QImage)
+    def setImg(self, image):
+        # Video in PyQt5 in other thread:
+        # https://stackoverflow.com/questions/44404349/pyqt-showing-video-stream-from-opencv
+        self.imgRaw = cv2.imread(FILE_NAME)
+        self.previewRaw.setPixmap(QPixmap.fromImage(image).scaledToWidth(self.previewRaw.size().width()))
 
     def onBtnOpenClicked(self):
-        # options = QFileDialog.Options()
-        # fileName, _ = QFileDialog.getOpenFileName(
-        #    self, "QFileDialog.getOpenFileName()", "", "All Files (*);;Jpeg (*.jpeg);;BMP (*.bmp)", options=options)
-        frame = me.get_frame_read()
-        cv2.imwrite("picture.png", frame.frame)
-        fileName = "picture.png"
-        if not fileName:
-            return
-        # self.srcQimg = QImage(fileName=fileName, format=QImage.Format_RGB32)
+        try:
+            self.image_thread = self.window.video_thread
+            self.image_thread.hsvImage.connect(self.setImg)
+            self.image_thread.set_emit_one_pic()
+        except Exception as ex:
+            self.window.addNewLogLine(f"Video stream must be running")
 
-        self.updateRawImg(cv2.imread(fileName))
-        # with open(fileName, 'rb') as f:
-        #   self.updateRawImg(QImage.fromData(f.read()))
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-    widget = MainWindow()
-    widget.show()
-    sys.exit(app.exec_())
