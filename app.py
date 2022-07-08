@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
         self.video_thread.videoStream.connect(self.setStream)
         self.video_thread.start()
         self.btn_connect.setDisabled(False)
-        self.right_widget.setTabEnabled(1,True)
+        self.right_widget.setTabEnabled(1, True)
         self.btn_stream.setDisabled(True)
 
     def button_disconnect(self):

@@ -187,12 +187,14 @@ class ThreadRunStream(QThread):
                     velocity = 100
                 else:
                     velocity = int((100/80)*(x_distance-20))
+                velocity = int(velocity*0.1)
                 self.drone.clockwise(abs(velocity))
             elif x_distance < -20:
                 if x_distance < -100:
                     velocity = -100
                 else:
                     velocity = int((100/80) * (x_distance+20))
+                velocity = int(velocity*0.1)
                 self.drone.counter_clockwise(abs(velocity))
             else:
                 velocity = 0

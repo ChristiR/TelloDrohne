@@ -87,7 +87,7 @@ def main():
 
 
 
-                cv2.imshow('detected circles', img2)
+                cv2.imshow('Feature detection', img2)
 
                 cv2.waitKey(1)
                 if frame.time_base < 1.0 / 60:
