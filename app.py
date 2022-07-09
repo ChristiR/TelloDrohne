@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
     def initUI(self):
         self.colorUpper = (74, 203, 164)
         self.colorLower = (62, 89, 75)
-
         self.video_thread = None
         self.setWindowTitle("Tello Drohne")
         left_frame = QFrame(self)

@@ -222,8 +222,6 @@ class ThreadRunStream(QThread):
         self.max_distance_y_down = dx_d
         self.min_distance_y_down = dn_d
 
-
-
     def trackball(self, center, radius):
         if center is None:
             self.drone.clockwise(0)
@@ -233,11 +231,6 @@ class ThreadRunStream(QThread):
             width = 640
             height = 480
             framecenter = (int(width // 2), int(height // 2))
-
-
-
-
-
             x_distance = center[0] - framecenter[0]
             y_distance = center[1] - framecenter[1]
             self.turn = self.turn + 1
