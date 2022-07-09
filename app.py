@@ -19,7 +19,6 @@ import time
 import subprocess
 
 from hsv_widget import *
-from settings_widget import *
 from video_stream import ThreadRunStream
 
 drone = tellopy.Tello()
@@ -32,7 +31,6 @@ class MainWindow(QMainWindow):
     def initUI(self):
         self.colorUpper = (74, 203, 164)
         self.colorLower = (62, 89, 75)
-
         self.video_thread = None
         self.setWindowTitle("Tello Drohne")
         left_frame = QFrame(self)
@@ -75,11 +73,8 @@ class MainWindow(QMainWindow):
         self.tab_1.setAlignment(Qt.AlignCenter)
         self.tab_2 = HsvWidget(window=self, drone=drone)
         self.right_widget = QTabWidget()
-        self.tab_3 = SettingsWidget(window=self)
-        self.right_widget = QTabWidget()
         self.right_widget.addTab(self.tab_1, "Video stream")
         self.right_widget.addTab(self.tab_2, "HSV Color")
-        self.right_widget.addTab(self.tab_3, "Settings")
         # self.right_widget.setTabEnabled(1, False)
 
         # self.label.setAlignment(Qt.AlignCenter)

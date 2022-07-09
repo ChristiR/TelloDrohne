@@ -30,33 +30,6 @@ FILE_NAME = "picture.png"
 class ThreadRunStream(QThread):
     videoStream = pyqtSignal(QImage)
     hsvImage = pyqtSignal(QImage)
-    # Parametereinstellung Standardwerte
-    # Clockwise/Counter_Clockwise
-    max_velocity_clockwise = 60
-    max_distance_x_clockwise = 210
-    min_distance_x_clockwise = 30
-
-    max_velocity_counter_clockwise = 60
-    max_distance_x_counter_clockwise = 210
-    min_distance_x_counter_clockwise = 30
-
-    # Forward/Backward
-    max_velocity_forward = 60
-    max_radius_forward = 40
-    min_radius_forward = 20
-
-    max_velocity_backward = 60
-    max_radius_backward = 200
-    min_radius_backward = 70
-
-    # Up/Down
-    max_velocity_up = 50
-    max_distance_y_up = 150
-    min_distance_y_up = 35
-
-    max_velocity_down = 50
-    max_distance_y_down = 150
-    min_distance_y_down = 35
     turn = 0
     def __init__(self):
         self.emit_one_pic = False
@@ -193,36 +166,6 @@ class ThreadRunStream(QThread):
     def set_emit_one_pic(self):
         self.emit_one_pic = True
 
-    def update_settings(self, v_u, dx_u, dn_u, v_d, dx_d, dn_d, v_c, dx_c, dn_c, v_cc, dx_cc, dn_cc, v_f, dx_f, dn_f, v_b, dx_b, dn_b):
-        # Parametereinstellung Standardwerte
-        # Clockwise/Counter_Clockwise
-        self.max_velocity_clockwise = v_c
-        self.max_distance_x_clockwise = dx_c
-        self.min_distance_x_clockwise = dn_c
-
-        self.max_velocity_counter_clockwise = v_cc
-        self.max_distance_x_counter_clockwise = dx_cc
-        self.min_distance_x_counter_clockwise = dn_cc
-
-        # Forward/Backward
-        self.max_velocity_forward = v_f
-        self.max_radius_forward = dx_f
-        self.min_radius_forward = dn_f
-
-        self.max_velocity_backward = v_b
-        self.max_radius_backward = dx_b
-        self.min_radius_backward = dn_b
-
-        # Up/Down
-        self.max_velocity_up = v_u
-        self.max_distance_y_up = dx_u
-        self.min_distance_y_up = dn_u
-
-        self.max_velocity_down = v_d
-        self.max_distance_y_down = dx_d
-        self.min_distance_y_down = dn_d
-
-
 
     def trackball(self, center, radius):
         if center is None:
@@ -235,9 +178,6 @@ class ThreadRunStream(QThread):
             framecenter = (int(width // 2), int(height // 2))
 
 
-
-
-
             x_distance = center[0] - framecenter[0]
             y_distance = center[1] - framecenter[1]
             self.turn = self.turn + 1
@@ -246,17 +186,17 @@ class ThreadRunStream(QThread):
             if self.turn == 0:
                 # rotation of drone
                 #x_distance = 0
-                if x_distance > self.min_distance_x_clockwise:
-                    if x_distance > self.max_distance_x_clockwise:
-                        velocity = self.max_velocity_clockwise
+                if x_distance > 30:
+                    if x_distance > 210:
+                        velocity = 60
                     else:
-                        velocity = int((self.max_velocity_clockwise / (self.max_distance_x_clockwise-self.min_distance_x_clockwise)) * (x_distance - self.min_distance_x_clockwise))
+                        velocity = int((60 / 190) * (x_distance - 30))
                     self.drone.clockwise(abs(velocity))
-                elif x_distance < -self.min_distance_x_counter_clockwise:
-                    if x_distance < -self.max_distance_x_counter_clockwise:
-                        velocity = -self.max_velocity_counter_clockwise
+                elif x_distance < -30:
+                    if x_distance < -210:
+                        velocity = -60
                     else:
-                        velocity = int((self.max_velocity_counter_clockwise / (self.max_distance_x_counter_clockwise-self.min_distance_x_counter_clockwise)) * (x_distance + self.min_distance_x_counter_clockwise))
+                        velocity = int((60 / 190) * (x_distance + 30))
                     self.drone.counter_clockwise(abs(velocity))
                 else:
                     velocity = 0
@@ -264,37 +204,37 @@ class ThreadRunStream(QThread):
             if self.turn == 1:
                 # forward and backward flying
                 #radius = 42
-                if radius > self.max_radius_forward and radius < self.min_radius_backward:
+                if radius > 40 and radius < 70:
                     velocity = 0
                     self.drone.forward(velocity)
-                elif radius < self.max_radius_forward:
-                    if radius < self.min_radius_forward:
-                        velocity = self.max_velocity_forward
+                elif radius < 40:
+                    if radius < 20:
+                        velocity = 60
                     else:
-                        velocity = int((self.max_velocity_forward / (self.max_radius_forward - self.min_radius_forward)) * (radius - self.min_radius_forward))
+                        velocity = int((60 / 20) * (radius - 20))
                     # velocity = int(50/radius)
                     self.drone.forward(velocity)
-                elif radius > self.min_radius_backward:
-                    if radius > self.max_radius_backward:
-                        velocity = self.max_velocity_backward
+                elif radius > 70:
+                    if radius > 200:
+                        velocity = 60
                     else:
-                        velocity = int((self.max_velocity_backward / (self.max_radius_backward-self.min_radius_backward)) * (radius - self.min_radius_backward))
+                        velocity = int((60 / 130) * (radius - 70))
                     # velocity = int(40-radius)
                     self.drone.backward(velocity)
             if self.turn == 2:
                 # flying up and down
                 #y_distance = 0
-                if y_distance > self.min_distance_y_down:
-                    if y_distance > self.max_distance_y_down:
-                        velocity = self.max_velocity_down
+                if y_distance > 35:
+                    if y_distance > 150:
+                        velocity = 50
                     else:
-                        velocity = int((self.max_velocity_down / (self.max_distance_y_down-self.min_distance_y_down)) * (y_distance - self.min_distance_y_down))
+                        velocity = int((50 / 115) * (y_distance - 35))
                     self.drone.down(abs(velocity))
-                elif y_distance < -self.min_distance_y_up:
-                    if y_distance < -self.max_distance_y_up:
-                        velocity = -self.max_velocity_up
+                elif y_distance < -35:
+                    if y_distance < -150:
+                        velocity = -50
                     else:
-                        velocity = int((self.max_velocity_up / (self.max_distance_y_up-self.min_distance_y_up)) * (y_distance + self.min_distance_y_up))
+                        velocity = int((50 / 115) * (y_distance + 35))
                     self.drone.up(abs(velocity))
                 else:
                     velocity = 0
