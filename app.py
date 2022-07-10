@@ -19,6 +19,7 @@ import time
 import subprocess
 
 from hsv_widget import *
+from settings_widget import *
 from video_stream import ThreadRunStream
 
 drone = tellopy.Tello()
@@ -73,8 +74,11 @@ class MainWindow(QMainWindow):
         self.tab_1.setAlignment(Qt.AlignCenter)
         self.tab_2 = HsvWidget(window=self, drone=drone)
         self.right_widget = QTabWidget()
+        self.tab_3 = SettingsWidget(window=self)
+        self.right_widget = QTabWidget()
         self.right_widget.addTab(self.tab_1, "Video stream")
         self.right_widget.addTab(self.tab_2, "HSV Color")
+        self.right_widget.addTab(self.tab_3, "Settings")
         # self.right_widget.setTabEnabled(1, False)
 
         # self.label.setAlignment(Qt.AlignCenter)
