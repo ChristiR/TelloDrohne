@@ -90,8 +90,14 @@ class MainWindow(QMainWindow):
         self.loggingTextBox = QPlainTextEdit()
         self.loggingTextBox.setStyleSheet("QTextEdit {color:red}")
         self.loggingTextBox.setReadOnly(True)
-        layout_bottom = QVBoxLayout()
+
+        self.loggingConsole = QPlainTextEdit()
+        self.loggingConsole.setStyleSheet("QTextEdit {color:red}")
+        self.loggingConsole.setReadOnly(True)
+
+        layout_bottom = QHBoxLayout()
         layout_bottom.addWidget(self.loggingTextBox)
+        layout_bottom.addWidget(self.loggingConsole)
         layout_bottom.setContentsMargins(0, 0, 0, 0)
         bottom_frame.setLayout(layout_bottom)
 
