@@ -75,6 +75,8 @@ class ThreadRunStream(QThread):
         print("UPDSATED")
         print(self.colorLower)
         print(self.colorUpper)
+    def stop(self):
+        self.terminate()
 
     def run(self):
         try:

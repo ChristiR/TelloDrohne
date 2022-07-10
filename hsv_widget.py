@@ -117,7 +117,6 @@ class HsvWidget(QWidget):
             }
             json.dump(json_data, f, ensure_ascii=False, indent=4)
 
-
     # =========== Helper ===========
     def updatePreviewHsvSpace(self):
         # refreshes the box on the bottom left in the HSV tab
