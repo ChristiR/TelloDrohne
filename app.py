@@ -156,6 +156,7 @@ class MainWindow(QMainWindow):
         self.btn_disconnect.setDisabled(False)
         self.btn_connect.setDisabled(True)
         self.right_widget.setTabEnabled(1, False)
+        self.addNewLogLine(f"Take off")
         #self.video_thread.setstartroutine(self)
 
 

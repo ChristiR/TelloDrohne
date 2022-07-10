@@ -136,6 +136,12 @@ class SettingsWidget(QWidget):
 
     def onBtnSaveClicked(self):
         try:
+            self.window.addNewLogLine(f"New values set for Up\n\tMax. Velocity: {self.max_velocity_up}\n\tMin. Distance: {self.min_distance_y_up}\n\tMax. Distance: {self.max_distance_y_up}")
+            self.window.addNewLogLine(f"New values set for Down\n\tMax. Velocity: {self.max_velocity_down}\n\tMin. Distance: {self.min_distance_y_down}\n\tMax. Distance: {self.max_distance_y_down}")
+            self.window.addNewLogLine(f"New values set for Counter_Clockwise\n\tMax. Velocity: {self.max_velocity_counter_clockwise}\n\tMin. Distance: {self.min_distance_x_counter_clockwise}\n\tMax. Distance: {self.max_distance_x_counter_clockwise}")
+            self.window.addNewLogLine(f"New values set for Clockwise\n\tMax. Velocity: {self.max_velocity_clockwise}\n\tMin. Distance: {self.min_distance_x_clockwise}\n\tMax. Distance: {self.max_distance_x_clockwise}")
+            self.window.addNewLogLine(f"New values set for Forward\n\tMax. Velocity: {self.max_velocity_forward}\n\tMin. Radius: {self.min_radius_forward}\n\tMax. Radius: {self.max_radius_forward}")
+            self.window.addNewLogLine(f"New values set for Backward\n\tMax. Velocity: {self.max_velocity_backward}\n\tMin. Radius: {self.min_radius_backward}\n\tMax. Radius: {self.max_radius_backward}")
             self.image_thread = self.window.video_thread
             #v_u, dx_u, dn_u, v_d, dx_d, dn_d, v_c, dx_c, dn_c, v_cc, dx_cc, dn_cc, v_f, dx_f, dn_f, v_b, dx_b, dn_b)
             self.image_thread.update_settings(self.max_velocity_up, self.max_distance_y_up, self.min_distance_y_up, self.max_velocity_down, self.max_distance_y_down, self.min_distance_y_down, self.max_velocity_clockwise, self.max_distance_x_clockwise, self.min_distance_x_clockwise, self.max_velocity_counter_clockwise, self.max_distance_x_counter_clockwise, self.min_distance_x_counter_clockwise, self.max_velocity_forward, self.max_radius_forward, self. min_radius_forward, self.max_velocity_backward, self.max_radius_backward, self.min_radius_backward)
@@ -187,6 +193,7 @@ class SettingsWidget(QWidget):
         self.s_max_dis_backward.setValue(max_radius_backward)
         min_radius_backward = 70
         self.s_min_dis_backward.setValue(min_radius_backward)
+        self.window.addNewLogLine(f"All values have been reset to default values.")
 
     def on_s_max_vel_up_Changed(self):
         _v = self.selectedValue = self.s_max_vel_up.value()
