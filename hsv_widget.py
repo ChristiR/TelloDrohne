@@ -250,6 +250,7 @@ class HsvWidget(QWidget):
             self.image_thread = self.window.video_thread
             self.image_thread.hsvImage.connect(self.setImg)
             self.image_thread.set_emit_one_pic()
+            self.window.addNewLogLine(f"The image has been loaded.")
         except Exception as ex:
             self.window.addNewLogLine(f"Video stream must be running")
 
