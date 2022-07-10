@@ -186,12 +186,22 @@ class MainWindow(QMainWindow):
         #drone.clockwise(100)
 
     def closeEvent(self, event):
-        self.video_thread.terminate()
-        event.accept() # let the window close
+        try:
+            drone.quit()
+            self.video_thread.stop()
+        except:
+            self.video_thread = None
+        try:
+            app.exit()
+            event.accept()
+            sys.exit()
+        except:
+            print(sys.exc_info()[0])
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet("QTextEdit {color:red}")
+    app.setQuitOnLastWindowClosed(True)
     ex = MainWindow()
     sys.exit(app.exec_())
