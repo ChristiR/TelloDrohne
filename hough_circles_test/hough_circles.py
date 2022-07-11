@@ -8,8 +8,12 @@ import numpy
 import time
 
 
+
 def main():
     drone = tellopy.Tello()
+
+    unix_time = int(time.time())
+    frame_count = 0
 
     try:
         drone.connect()
@@ -39,7 +43,7 @@ def main():
                 img = cv2.medianBlur(img, 5)
                 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 10000, param1=70, param2=100, minRadius=20, maxRadius=400)
-                print(f"CirclesHough: {circles}")
+                # print(f"CirclesHough: {circles}")
                 if circles is not None:
                     for i in circles[0, :]:
                         cv2.circle(gray, (int(i[0]), int(i[1])), int(i[2]), (0, 0, 255), 2) # draw the outer circle
@@ -52,6 +56,14 @@ def main():
                 else:
                     time_base = frame.time_base
                 frame_skip = int((time.time() - start_time) / time_base)
+
+                # FPS measurement
+                if unix_time == int(time.time()):
+                    frame_count += 1
+                else:
+                    print(frame_count)
+                    unix_time = int(time.time())
+                    frame_count = 0
 
 
     except Exception as ex:

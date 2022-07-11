@@ -92,6 +92,15 @@ class ThreadRunStream(QThread):
                     start_time = time.time()
                     img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
 
+                    # # convert image from RGB to HSV from https://stackoverflow.com/a/60683865/14522363
+                    # img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+                    # img_hsv = cv2.medianBlur(img_hsv, 5)
+                    # # Histogram equalisation on the V-channel
+                    # img_hsv[:, :, 2] = cv2.equalizeHist(img_hsv[:, :, 2])
+                    # # convert image back from HSV to RGB
+                    # img = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
+
+
                     # this is for emitting one pic to the hsv tool
                     if self.emit_one_pic:
                         self.emit_one_pic = False
@@ -155,6 +164,8 @@ class ThreadRunStream(QThread):
                     #             center = (int(i[0]), int(i[1]))
                     #             radius = int(i[2])
                     #             print("HSV--smaller")
+
+
 
 
                     print(f"CircleUsed:   {center} - {radius}")

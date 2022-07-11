@@ -1,7 +1,12 @@
+import sys
+from datetime import datetime
 
+import imutils
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from PyQt5 import Qt
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QImage, QPixmap
 import tellopy_modified as tello
 
 import subprocess
@@ -15,8 +20,8 @@ drone = tello.Tello()
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        drone.set_main_window(self)
         self.initUI()
+        drone.set_main_window(self)
 
     def initUI(self):
         self.colorUpper = (74, 203, 164)
@@ -115,12 +120,17 @@ class MainWindow(QMainWindow):
             self.video_thread.updateLowerUpper(self.colorLower, self.colorUpper)
 
     def addNewLogLine(self, text):
-        self.loggingTextBox.appendPlainText(text)
+        now = datetime.now()
+        ts = ("%02d:%02d:%02d.%03d" % (now.hour, now.minute, now.second, now.microsecond / 1000))
+        self.loggingTextBox.appendPlainText(f"{ts}: {text}")
         self.loggingTextBox.verticalScrollBar().maximum()
+        self.loggingConsole.verticalScrollBar().setValue(10)
 
     def addNewLogLineRight(self, text):
         self.loggingConsole.appendPlainText(text)
         self.loggingConsole.verticalScrollBar().maximum()
+        self.loggingConsole.verticalScrollBar().setValue(10)
+
 
     def checkWifi(self):
         wifi = subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces'])
