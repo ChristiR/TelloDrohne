@@ -6,12 +6,10 @@ from PyQt5.QtWidgets import *
 from PyQt5 import Qt
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
-from djitellopy import tello
 import cv2
 
 import sys
 import traceback
-import tellopy
 import av
 import numpy
 import time

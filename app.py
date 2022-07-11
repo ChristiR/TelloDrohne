@@ -6,12 +6,11 @@ from PyQt5.QtWidgets import *
 from PyQt5 import Qt
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
-from djitellopy import tello
 import cv2
 
 import sys
 import traceback
-import tellopy
+import tellopy_modified as tello
 import av
 import numpy
 import time
@@ -22,11 +21,12 @@ from hsv_widget import *
 from settings_widget import *
 from video_stream import ThreadRunStream
 
-drone = tellopy.Tello()
+drone = tello.Tello()
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        drone.set_main_window(self)
         self.initUI()
 
     def initUI(self):
@@ -129,6 +129,10 @@ class MainWindow(QMainWindow):
         self.loggingTextBox.appendPlainText(text)
         self.loggingTextBox.verticalScrollBar().maximum()
 
+    def addNewLogLineRight(self, text):
+        self.loggingConsole.appendPlainText(text)
+        self.loggingConsole.verticalScrollBar().maximum()
+
     def checkWifi(self):
         wifi = subprocess.check_output(['netsh', 'WLAN', 'show', 'interfaces'])
         if b"TELLO" in wifi:
@@ -176,7 +180,7 @@ class MainWindow(QMainWindow):
         self.addNewLogLine("Landing...")
         self.btn_connect.setDisabled(False)
         self.btn_disconnect.setDisabled(True)
-        self.right_widget.setTabEnabled(1,True)
+        self.right_widget.setTabEnabled(1, True)
         drone.land()
 
     def button_check_battery(self):

@@ -21,7 +21,6 @@ import sys
 import traceback
 
 import numpy as np
-import tellopy
 import av
 import cv2
 # import cv2_.cv2 as cv2

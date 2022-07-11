@@ -2,3 +2,13 @@
 *.pyc
 .idea/workspace.xml
 *.pyc
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/TelloDrohne.iml
+.idea/vcs.xml
+*.pyc
+__pycache__/hsv_widget.cpython-39.pyc
+*.pyc
+__pycache__/hsv_widget.cpython-39.pyc
