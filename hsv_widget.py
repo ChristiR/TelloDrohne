@@ -1,30 +1,15 @@
-import sys
-import os
-import base64
-
 from PyQt5 import uic
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSize, QThread
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QSize
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QFileDialog, QMainWindow, QLabel, QPushButton, QSlider, \
-    QWidget, QHBoxLayout
-import cv2
-import numpy as np
+from PyQt5.QtWidgets import QComboBox, QLabel, QPushButton, QSlider, QWidget
+
 import os
 
 import json
-
-import sys
-import traceback
-
 import numpy as np
-import av
 import cv2
-# import cv2_.cv2 as cv2
-import numpy
 
 FILE_NAME = "picture.png"
 

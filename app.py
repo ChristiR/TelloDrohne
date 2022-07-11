@@ -1,19 +1,8 @@
-import sys
 
-import imutils
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from PyQt5 import Qt
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QImage, QPixmap
-import cv2
-
-import sys
-import traceback
 import tellopy_modified as tello
-import av
-import numpy
-import time
 
 import subprocess
 

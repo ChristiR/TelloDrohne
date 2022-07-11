@@ -1,18 +1,5 @@
-import sys
-import os
-import base64
-
 from PyQt5 import uic
-from PyQt5 import QtGui
-from PyQt5.QtCore import QSize, QThread
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QColor, QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QCheckBox, QComboBox, QFileDialog, QMainWindow, QLabel, QPushButton, QSlider, \
-    QWidget, QHBoxLayout, QLineEdit
-import cv2
-import numpy as np
+from PyQt5.QtWidgets import QPushButton, QSlider, QWidget, QLineEdit
 import os
 
 

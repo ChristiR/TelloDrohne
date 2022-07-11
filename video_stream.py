@@ -1,20 +1,13 @@
-import sys
-
 import imutils
-from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import *
 from PyQt5 import Qt
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QImage, QPixmap
-import cv2
+from PyQt5.QtCore import QThread, Qt, pyqtSignal
 
 import sys
 import traceback
 import av
 import numpy
 import time
-
-import subprocess
 
 from hsv_widget import *
 from utils import *
