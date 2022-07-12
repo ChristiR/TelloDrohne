@@ -194,15 +194,15 @@ class SettingsWidget(QWidget):
         self.e_max_vel_up.setText(str(_v))
 
     def on_s_min_dis_up_Changed(self):
-        self.s_max_dis_up.setMinimum(self.s_min_dis_up.value())
-        self.s_min_dis_up.setMaximum(self.s_max_dis_up.value())
+        self.s_max_dis_up.setMinimum(self.s_min_dis_up.value()+1)
+        self.s_min_dis_up.setMaximum(self.s_max_dis_up.value()-1)
         _v = self.selectedValue = self.s_min_dis_up.value()
         self.min_distance_y_up = _v
         self.e_min_dis_up.setText(str(_v))
 
     def on_s_max_dis_up_Changed(self):
-        self.s_max_dis_up.setMinimum(self.s_min_dis_up.value())
-        self.s_min_dis_up.setMaximum(self.s_max_dis_up.value())
+        self.s_max_dis_up.setMinimum(self.s_min_dis_up.value()+1)
+        self.s_min_dis_up.setMaximum(self.s_max_dis_up.value()-1)
         _v = self.selectedValue = self.s_max_dis_up.value()
         self.max_distance_y_up = _v
         self.e_max_dis_up.setText(str(_v))
@@ -213,15 +213,15 @@ class SettingsWidget(QWidget):
         self.e_max_vel_down.setText(str(_v))
 
     def on_s_min_dis_down_Changed(self):
-        self.s_max_dis_down.setMinimum(self.s_min_dis_down.value())
-        self.s_min_dis_down.setMaximum(self.s_max_dis_down.value())
+        self.s_max_dis_down.setMinimum(self.s_min_dis_down.value()+1)
+        self.s_min_dis_down.setMaximum(self.s_max_dis_down.value()-1)
         _v = self.selectedValue = self.s_min_dis_down.value()
         self.min_distance_y_down = _v
         self.e_min_dis_down.setText(str(_v))
 
     def on_s_max_dis_down_Changed(self):
-        self.s_max_dis_down.setMinimum(self.s_min_dis_down.value())
-        self.s_min_dis_down.setMaximum(self.s_max_dis_down.value())
+        self.s_max_dis_down.setMinimum(self.s_min_dis_down.value()+1)
+        self.s_min_dis_down.setMaximum(self.s_max_dis_down.value()-1)
         _v = self.selectedValue = self.s_max_dis_down.value()
         self.max_distance_y_down = _v
         self.e_max_dis_down.setText(str(_v))
@@ -232,15 +232,15 @@ class SettingsWidget(QWidget):
         self.e_max_vel_clockwise.setText(str(_v))
 
     def on_s_min_dis_clockwise_Changed(self):
-        self.s_max_dis_clockwise.setMinimum(self.s_min_dis_clockwise.value())
-        self.s_min_dis_clockwise.setMaximum(self.s_max_dis_clockwise.value())
+        self.s_max_dis_clockwise.setMinimum(self.s_min_dis_clockwise.value()+1)
+        self.s_min_dis_clockwise.setMaximum(self.s_max_dis_clockwise.value()-1)
         _v = self.selectedValue = self.s_min_dis_clockwise.value()
         self.min_distance_x_clockwise = _v
         self.e_min_dis_clockwise.setText(str(_v))
 
     def on_s_max_dis_clockwise_Changed(self):
-        self.s_max_dis_clockwise.setMinimum(self.s_min_dis_clockwise.value())
-        self.s_min_dis_clockwise.setMaximum(self.s_max_dis_clockwise.value())
+        self.s_max_dis_clockwise.setMinimum(self.s_min_dis_clockwise.value()+1)
+        self.s_min_dis_clockwise.setMaximum(self.s_max_dis_clockwise.value()-1)
         _v = self.selectedValue = self.s_max_dis_clockwise.value()
         self.max_distance_x_clockwise = _v
         self.e_max_dis_clockwise.setText(str(_v))
@@ -251,15 +251,15 @@ class SettingsWidget(QWidget):
         self.e_max_vel_counter_clockwise.setText(str(_v))
 
     def on_s_min_dis_counter_clockwise_Changed(self):
-        self.s_max_dis_counter_clockwise.setMinimum(self.s_min_dis_counter_clockwise.value())
-        self.s_min_dis_counter_clockwise.setMaximum(self.s_max_dis_counter_clockwise.value())
+        self.s_max_dis_counter_clockwise.setMinimum(self.s_min_dis_counter_clockwise.value()+1)
+        self.s_min_dis_counter_clockwise.setMaximum(self.s_max_dis_counter_clockwise.value()-1)
         _v = self.selectedValue = self.s_min_dis_counter_clockwise.value()
         self.min_distance_x_counter_clockwise = _v
         self.e_min_dis_counter_clockwise.setText(str(_v))
 
     def on_s_max_dis_counter_clockwise_Changed(self):
-        self.s_max_dis_counter_clockwise.setMinimum(self.s_min_dis_counter_clockwise.value())
-        self.s_min_dis_counter_clockwise.setMaximum(self.s_max_dis_counter_clockwise.value())
+        self.s_max_dis_counter_clockwise.setMinimum(self.s_min_dis_counter_clockwise.value()+1)
+        self.s_min_dis_counter_clockwise.setMaximum(self.s_max_dis_counter_clockwise.value()-1)
         _v = self.selectedValue = self.s_max_dis_counter_clockwise.value()
         self.min_distance_x_counter_clockwise = _v
         self.e_max_dis_counter_clockwise.setText(str(_v))
@@ -270,17 +270,17 @@ class SettingsWidget(QWidget):
         self.e_max_vel_forward.setText(str(_v))
 
     def on_s_min_dis_forward_Changed(self):
-        self.s_min_dis_forward.setMaximum(self.s_max_dis_forward.value())
-        self.s_max_dis_forward.setMinimum(self.s_min_dis_forward.value())
+        self.s_min_dis_forward.setMaximum(self.s_max_dis_forward.value()-1)
+        self.s_max_dis_forward.setMinimum(self.s_min_dis_forward.value()+1)
         _v = self.selectedValue = self.s_min_dis_forward.value()
         self.min_radius_forward = _v
         self.e_min_dis_forward.setText(str(_v))
 
     def on_s_max_dis_forward_Changed(self):
-        self.s_min_dis_forward.setMaximum(self.s_max_dis_forward.value())
-        self.s_min_dis_backward.setMinimum(self.s_max_dis_forward.value())
-        self.s_max_dis_forward.setMinimum(self.s_min_dis_forward.value())
-        self.s_max_dis_forward.setMaximum(self.s_min_dis_backward.value())
+        self.s_min_dis_forward.setMaximum(self.s_max_dis_forward.value()-1)
+        self.s_min_dis_backward.setMinimum(self.s_max_dis_forward.value()+1)
+        self.s_max_dis_forward.setMinimum(self.s_min_dis_forward.value()+1)
+        self.s_max_dis_forward.setMaximum(self.s_min_dis_backward.value()-1)
         _v = self.selectedValue = self.s_max_dis_forward.value()
         self.max_radius_forward = _v
         self.e_max_dis_forward.setText(str(_v))
@@ -291,17 +291,17 @@ class SettingsWidget(QWidget):
         self.e_max_vel_backward.setText(str(_v))
 
     def on_s_min_dis_backward_Changed(self):
-        self.s_max_dis_forward.setMaximum(self.s_min_dis_backward.value())
-        self.s_max_dis_backward.setMinimum(self.s_min_dis_backward.value())
-        self.s_min_dis_backward.setMinimum(self.s_max_dis_forward.value())
-        self.s_min_dis_backward.setMaximum(self.s_max_dis_backward.value())
+        self.s_max_dis_forward.setMaximum(self.s_min_dis_backward.value()-1)
+        self.s_max_dis_backward.setMinimum(self.s_min_dis_backward.value()+1)
+        self.s_min_dis_backward.setMinimum(self.s_max_dis_forward.value()+1)
+        self.s_min_dis_backward.setMaximum(self.s_max_dis_backward.value()-1)
         _v = self.selectedValue = self.s_min_dis_backward.value()
         self.min_radius_backward = _v
         self.e_min_dis_backward.setText(str(_v))
 
     def on_s_max_dis_backward_Changed(self):
-        self.s_max_dis_backward.setMinimum(self.s_min_dis_backward.value())
-        self.s_min_dis_backward.setMaximum(self.s_max_dis_backward.value())
+        self.s_max_dis_backward.setMinimum(self.s_min_dis_backward.value()+1)
+        self.s_min_dis_backward.setMaximum(self.s_max_dis_backward.value()-1)
         _v = self.selectedValue = self.s_max_dis_backward.value()
         self.max_radius_backward = _v
         self.e_max_dis_backward.setText(str(_v))

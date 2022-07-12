@@ -156,7 +156,7 @@
       </rect>
      </property>
      <property name="maximum">
-      <number>150</number>
+      <number>149</number>
      </property>
      <property name="value">
       <number>35</number>
@@ -175,7 +175,7 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>35</number>
+      <number>36</number>
      </property>
      <property name="maximum">
       <number>240</number>
@@ -316,7 +316,7 @@
       </rect>
      </property>
      <property name="maximum">
-      <number>150</number>
+      <number>149</number>
      </property>
      <property name="value">
       <number>35</number>
@@ -335,7 +335,7 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>35</number>
+      <number>36</number>
      </property>
      <property name="maximum">
       <number>240</number>
@@ -489,7 +489,7 @@
       </rect>
      </property>
      <property name="maximum">
-      <number>210</number>
+      <number>209</number>
      </property>
      <property name="value">
       <number>30</number>
@@ -508,7 +508,7 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>30</number>
+      <number>31</number>
      </property>
      <property name="maximum">
       <number>320</number>
@@ -649,7 +649,7 @@
       </rect>
      </property>
      <property name="maximum">
-      <number>210</number>
+      <number>209</number>
      </property>
      <property name="value">
       <number>30</number>
@@ -666,6 +666,9 @@
        <width>211</width>
        <height>22</height>
       </rect>
+     </property>
+     <property name="minimum">
+      <number>31</number>
      </property>
      <property name="maximum">
       <number>320</number>
@@ -852,7 +855,7 @@
       <number>1</number>
      </property>
      <property name="maximum">
-      <number>40</number>
+      <number>39</number>
      </property>
      <property name="value">
       <number>20</number>
@@ -871,10 +874,10 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>20</number>
+      <number>21</number>
      </property>
      <property name="maximum">
-      <number>70</number>
+      <number>69</number>
      </property>
      <property name="value">
       <number>40</number>
@@ -1039,10 +1042,10 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>40</number>
+      <number>41</number>
      </property>
      <property name="maximum">
-      <number>200</number>
+      <number>199</number>
      </property>
      <property name="value">
       <number>70</number>
