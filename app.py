@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         self.loadHsvValues()
 
     def loadHsvValues(self):
-        with open('hsv.json') as f:
+        with open('res/hsv.json') as f:
             data = json.load(f)
             self.colorUpper = tuple(data["hsv"]["colorUpper"])
             self.colorLower = tuple(data["hsv"]["colorLower"])

@@ -12,7 +12,7 @@ import time
 from hsv_widget import *
 from utils import *
 
-FILE_NAME = "picture.png"
+FILE_NAME = "res/picture.png"
 
 
 @Singleton

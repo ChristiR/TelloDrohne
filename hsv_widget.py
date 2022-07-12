@@ -11,7 +11,7 @@ import json
 import numpy as np
 import cv2
 
-FILE_NAME = "picture.png"
+FILE_NAME = "res/picture.png"
 
 
 def generateSolidColorPixmap(w, h, color):
@@ -40,7 +40,7 @@ class HsvWidget(QWidget):
         super(HsvWidget, self).__init__()
         self.window = window
         self.drone = drone
-        self.fileName = "picture.png"
+        self.fileName = "res/picture.png"
         uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/main_window.ui"), self)
 
         self.sliderH = self.findChild(QSlider, "sliderH")
@@ -90,7 +90,7 @@ class HsvWidget(QWidget):
     def onBtnCopyClicked(self):
         self.window.updateLowerUpper(self.lowerHSV, self.upperHSV)
         self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
-        with open('hsv.json', 'w', encoding='utf-8') as f:
+        with open('res/hsv.json', 'w', encoding='utf-8') as f:
             json_data = {
                 "hsv":
                     {
