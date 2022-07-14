@@ -125,11 +125,13 @@ class MainWindow(QMainWindow):
         ts = ("%02d:%02d:%02d.%03d" % (now.hour, now.minute, now.second, now.microsecond / 1000))
         self.loggingTextBox.appendPlainText(f"{ts}: {text}")
         self.loggingTextBox.verticalScrollBar().maximum()
+        self.loggingTextBox.verticalScrollBar().setValue(10)
 
     # Fügt eine neue Zeile mit Text im rechten Textfeld hinzu
     def addNewLogLineRight(self, text):
         self.loggingConsole.appendPlainText(text)
         self.loggingConsole.verticalScrollBar().maximum()
+        self.loggingConsole.verticalScrollBar().setValue(10)
 
     # Überprüft ob die Drohne mit dem Computer verbunden ist, auf dem das Programm ausgeführt wird
     def checkWifi(self):
