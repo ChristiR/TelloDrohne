@@ -64,6 +64,7 @@ class ThreadRunStream(QThread):
         print(self.colorUpper)
 
     # Starten des Videostreams inklusive der Bildverarbeitung
+    # Angelehnt an https://github.com/hanyazou/TelloPy
     def run(self):
         try:
             # warten bis die Drohne verbunden ist
@@ -89,6 +90,7 @@ class ThreadRunStream(QThread):
                     # den aktuellen Frame zu einem Array konvertieren
                     img = cv2.cvtColor(numpy.array(frame.to_image()), cv2.COLOR_RGB2BGR)
 
+                    # # uncomment this code to test the histogram equalization
                     # # convert image from RGB to HSV from https://stackoverflow.com/a/60683865/14522363
                     # img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
                     # img_hsv = cv2.medianBlur(img_hsv, 5)
@@ -96,7 +98,6 @@ class ThreadRunStream(QThread):
                     # img_hsv[:, :, 2] = cv2.equalizeHist(img_hsv[:, :, 2])
                     # # convert image back from HSV to RGB
                     # img = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2RGB)
-
 
                     # this is for emitting one pic to the hsv tool
                     if self.emit_one_pic:
@@ -109,9 +110,6 @@ class ThreadRunStream(QThread):
                         p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
                         self.hsvImage.emit(p)
 
-                    # cv2.imshow('Original', image)
-                    # cv2.imshow('Canny', cv2.Canny(image, 100, 200))
-                    # cv2.waitKey(1)
                     if frame.time_base < 1.0 / 60:
                         time_base = 1.0 / 60
                     else:
@@ -121,8 +119,6 @@ class ThreadRunStream(QThread):
                     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
                     # Die maske mit upper und lower bestimmen und auf das hsv-Bild anwenden
                     mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
-                    #print(self.colorLower)
-                    #print(self.colorUpper)
                     # Die Konturen nach anwenden der Maske finden
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     cnts = imutils.grab_contours(cnts)
@@ -144,7 +140,7 @@ class ThreadRunStream(QThread):
                                 cv2.circle(img, (int(x), int(y)), int(radius), (0, 255, 0), 2)
                                 cv2.circle(img, center, 5, (0, 255, 0), -1)
 
-                    # # with hough circle detection
+                    # # uncomment this code to test the hough circle detection
                     # img = cv2.medianBlur(img, 5)
                     # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                     # circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1.5, 10000, param1=70, param2=100, minRadius=20, maxRadius=400)
@@ -164,20 +160,15 @@ class ThreadRunStream(QThread):
                     #             radius = int(i[2])
                     #             print("HSV--smaller")
 
-
-
-
-                    #print(f"CircleUsed:   {center} - {radius}")
                     # Methode zur Steuerung der Drohne aufrufen und Radius und center des Objekts übergeben
                     self.trackball(center, radius)
-                    # img = cv2.resize(img, (int(img.shape[0]*0.5), int(img.shape[1]*0.5)))
                     img_new = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     h, w, ch = img_new.shape
                     bytesPerLine = ch * w
                     convertToQtFormat = QImage(img_new.data, w, h, bytesPerLine, QImage.Format_RGB888)
                     p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+                    # emits one frame to the HsvTool widget when button "LOAD" is being clicked
                     self.videoStream.emit(p)
-                    # QApplication.restoreOverrideCursor()
                     QApplication.setOverrideCursor(Qt.ArrowCursor)
         except Exception as ex:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -193,7 +184,7 @@ class ThreadRunStream(QThread):
             self.main_window.checkWifi()
             self.main_window.addNewLogLine("Could not connect to drone")
 
-
+    # called by button "LOAD" in HsvWidget (to receive one frame)
     def set_emit_one_pic(self):
         self.emit_one_pic = True
 
@@ -306,10 +297,3 @@ class ThreadRunStream(QThread):
                 else:
                     velocity = 0
                     self.drone.up(velocity)
-
-
-
-
-
-
-

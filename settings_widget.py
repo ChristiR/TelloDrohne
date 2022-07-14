@@ -104,7 +104,6 @@ class SettingsWidget(QWidget):
     def onBtnSaveClicked(self):
         try:
             self.image_thread = self.window.video_thread
-            #v_u, dx_u, dn_u, v_d, dx_d, dn_d, v_c, dx_c, dn_c, v_cc, dx_cc, dn_cc, v_f, dx_f, dn_f, v_b, dx_b, dn_b)
             self.image_thread.update_settings(self.max_velocity_up, self.max_distance_y_up, self.min_distance_y_up, self.max_velocity_down, self.max_distance_y_down, self.min_distance_y_down, self.max_velocity_clockwise, self.max_distance_x_clockwise, self.min_distance_x_clockwise, self.max_velocity_counter_clockwise, self.max_distance_x_counter_clockwise, self.min_distance_x_counter_clockwise, self.max_velocity_forward, self.max_radius_forward, self. min_radius_forward, self.max_velocity_backward, self.max_radius_backward, self.min_radius_backward)
             self.window.addNewLogLine(
                 f"New values set for Up\n\tMax. Velocity: {self.max_velocity_up}\n\tMin. Distance: {self.min_distance_y_up}\n\tMax. Distance: {self.max_distance_y_up}")

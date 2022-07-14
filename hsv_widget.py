@@ -19,7 +19,8 @@ def generateSolidColorPixmap(w, h, color):
             canvas.setPixel(kolom, baris, color.rgb())
     return canvas
 
-
+# Diese Klasse enthält das HsvWidget. Widgets können in andere Widgets oder beispielsweise das MainWindow eingebaut werden.
+# Angelehnt an https://github.com/hariangr/HsvRangeTool
 class HsvWidget(QWidget):
     # HSV-Werte
     selectedHue = 0
@@ -33,13 +34,13 @@ class HsvWidget(QWidget):
     imgMasked = None
     imgHsvSpace = None
 
-    # Hier wird die GUI erstellt
+    # Hier wird auf die Widgets der GUI zugegriffen (GUI -> ./assets/hsv_window.ui)
     def __init__(self, window, drone):
         super(HsvWidget, self).__init__()
         self.window = window
         self.drone = drone
         self.fileName = "res/picture.png"
-        uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/main_window.ui"), self)
+        uic.loadUi(os.path.join(os.path.dirname(__file__), "./assets/hsv_window.ui"), self)
 
         self.sliderH = self.findChild(QSlider, "sliderH")
         self.sliderH.setMinimumWidth(165)
@@ -97,23 +98,18 @@ class HsvWidget(QWidget):
                         "colorUpper": self.upperHSV,
                         "colorLower": self.lowerHSV
                     }
-
             }
             json.dump(json_data, f, ensure_ascii=False, indent=4)
 
-    # =========== Helper ===========
     def updatePreviewHsvSpace(self):
         # refreshes the box on the bottom left in the HSV tab
         if self.imgHsvSpace is None:
             return
-
         frame_HSV = cv2.cvtColor(self.imgHsvSpace, cv2.COLOR_BGR2HSV)
         lower_orange = np.array(self.lowerHSV)
         upper_orange = np.array(self.upperHSV)
-
         frame_threshold = cv2.inRange(
             frame_HSV, lower_orange, upper_orange)
-
         frame_threshold = cv2.bitwise_and(self.imgHsvSpace, self.imgHsvSpace, mask=frame_threshold)
         _asQImage = QImage(
             frame_threshold.data, frame_threshold.shape[1], frame_threshold.shape[0], frame_threshold.shape[1] * 3,
@@ -126,11 +122,9 @@ class HsvWidget(QWidget):
         prevH = generateSolidColorPixmap(
             200, 300, QColor.fromHsv(self.selectedHue, 255, 255))
         self.previewH.setPixmap(QPixmap.fromImage(prevH))
-
         prevS = generateSolidColorPixmap(
             200, 300, QColor.fromHsv(self.selectedHue, self.selectedSaturation, 255))
         self.previewS.setPixmap(QPixmap.fromImage(prevS))
-
         prevV = generateSolidColorPixmap(
             200, 300, QColor.fromHsv(self.selectedHue, self.selectedSaturation, self.selectedValue))
         self.previewV.setPixmap(QPixmap.fromImage(prevV))
@@ -147,15 +141,6 @@ class HsvWidget(QWidget):
                 f"H {self.lowerHSV[0]}; S {self.lowerHSV[1]}; V {self.lowerHSV[2]}")
         self.updateMask()
         self.updatePreviewHsvSpace()
-
-    def updateRawImg(self, img):
-        # _dsize = (self.previewRaw.size().height(),
-        #           self.previewRaw.size().width())
-        self.imgRaw = img
-        _imgAsQImg = QImage(self.imgRaw.data, self.imgRaw.shape[1], self.imgRaw.shape[0], QImage.Format_RGB888).rgbSwapped()
-        # self.imgRaw = img.scaled(200,100, QtCore.KeepAspectRatio)
-        # self.imgRaw = img.scaledToHeight(self.previewMask.size().height())
-        self.previewRaw.setPixmap(QPixmap.fromImage(_imgAsQImg).scaledToWidth(self.previewRaw.size().width()))
 
     def updateMask(self):
         if self.imgRaw is None:
@@ -188,7 +173,6 @@ class HsvWidget(QWidget):
         self.previewMaskedRaw.setPixmap(
             QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMaskedRaw.size().height()))
 
-    # =========== EVENT HANDLER ===========
     # Hier werden Änderungen der ComboBox erfasst und entsprechende Einstellungen vorgenommen
     def onCBoxModeChanged(self, text):
         if text == "UPPER":
