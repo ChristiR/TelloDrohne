@@ -9,6 +9,7 @@ import subprocess
 from hsv_widget import *
 from settings_widget import *
 from video_stream import ThreadRunStream
+from PIL import Image
 
 # variable to store reference to the drone
 drone = tello.Tello()
