@@ -55,7 +55,7 @@ class Logger:
         if self.main_window is None:
             return
         out = "%s:  Info: %s" % (self.header(), str)
-        for word in ["clockwise", "forward", "up", "video data"]:
+        for word in ["clockwise", "forward", "backward", "up", "down", "video data"]:
             if word in out:
                 return
         self.output(out)

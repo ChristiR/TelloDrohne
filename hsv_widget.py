@@ -4,16 +4,14 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import QComboBox, QLabel, QPushButton, QSlider, QWidget
-
 import os
-
 import json
 import numpy as np
 import cv2
-
+# Speicherort des Fotos, das gemacht wurde
 FILE_NAME = "res/picture.png"
 
-
+# Eine Pixmap erstellen
 def generateSolidColorPixmap(w, h, color):
     canvas = QImage(QSize(w, h), QImage.Format_RGB30)
     for baris in range(0, h):
@@ -23,19 +21,19 @@ def generateSolidColorPixmap(w, h, color):
 
 
 class HsvWidget(QWidget):
+    # HSV-Werte
     selectedHue = 0
     selectedSaturation = 255
     selectedValue = 255
-
+    # HSV-Werte zum begrenzen des erkannten Farbbereichs
     lowerHSV = (0, 0, 0)
     upperHSV = (179, 255, 255)
-
     imgRaw = None
     imgMask = None
     imgMasked = None
-
     imgHsvSpace = None
 
+    # Hier wird die GUI erstellt
     def __init__(self, window, drone):
         super(HsvWidget, self).__init__()
         self.window = window
@@ -75,10 +73,11 @@ class HsvWidget(QWidget):
         self.loadHsvSpace()
         self.updateHSVPreview()
 
-
+    # Hier wird das Bild geladen, in dem die HSV-Farben dargestellt sind
     def loadHsvSpace(self):
         self.imgHsvSpace = cv2.imread(os.path.join(os.path.dirname(__file__), "assets", "hsv_color.png"))
 
+    # Behandelt die Slider und Buttons, falls diese geändert oder gedrückt werden
     def init_handler(self):
         self.sliderH.valueChanged.connect(self.onHChanged)
         self.sliderS.valueChanged.connect(self.onSChanged)
@@ -87,6 +86,7 @@ class HsvWidget(QWidget):
         self.btnOpen.clicked.connect(self.onBtnOpenClicked)
         self.btnCopy.clicked.connect(self.onBtnCopyClicked)
 
+    # Wenn der Save-Button gedrückt wird, werden die HSV-Werte geladen in die json Datei gespeichert
     def onBtnCopyClicked(self):
         self.window.updateLowerUpper(self.lowerHSV, self.upperHSV)
         self.window.addNewLogLine(f"New values set\n\tUpper: {self.upperHSV}\n\tLower: {self.lowerHSV}")
@@ -121,6 +121,7 @@ class HsvWidget(QWidget):
         _asQImage = _asQImage.rgbSwapped()
         self.previewHsvSpace.setPixmap(QPixmap.fromImage(_asQImage).scaledToWidth(self.previewMask.size().width()))
 
+    # Hier werden die Bilder aktualisiert, so dass der Nutzer eine Vorschau seiner Einstellungen hat
     def updateHSVPreview(self):
         prevH = generateSolidColorPixmap(
             200, 300, QColor.fromHsv(self.selectedHue, 255, 255))
@@ -144,7 +145,6 @@ class HsvWidget(QWidget):
                              self.selectedSaturation, self.selectedValue)
             self.lblLower.setText(
                 f"H {self.lowerHSV[0]}; S {self.lowerHSV[1]}; V {self.lowerHSV[2]}")
-
         self.updateMask()
         self.updatePreviewHsvSpace()
 
@@ -189,7 +189,7 @@ class HsvWidget(QWidget):
             QPixmap.fromImage(_asQImage).scaledToHeight(self.previewMaskedRaw.size().height()))
 
     # =========== EVENT HANDLER ===========
-
+    # Hier werden Änderungen der ComboBox erfasst und entsprechende Einstellungen vorgenommen
     def onCBoxModeChanged(self, text):
         if text == "UPPER":
             self.selectedHue = self.upperHSV[0] * 2
@@ -206,28 +206,33 @@ class HsvWidget(QWidget):
 
         self.updateHSVPreview()
 
+    # Wenn der Hue-Wert (Farbwert) geändert wird
     def onHChanged(self):
         _v = self.selectedHue = self.sliderH.value()
         self.lblH.setText(str(f"QT5 ({_v}) | cv2 ({_v // 2})"))
         self.updateHSVPreview()
 
+    # Wenn der Saturation-Wert (Sättigung) geändert wird
     def onSChanged(self):
         _v = self.selectedSaturation = self.sliderS.value()
         self.lblS.setText(str(_v))
         self.updateHSVPreview()
 
+    # Wenn der Value-Wert (Helligkeit) geändert wird
     def onVChanged(self):
         _v = self.selectedValue = self.sliderV.value()
         self.lblV.setText(str(_v))
         self.updateHSVPreview()
 
     @pyqtSlot(QImage)
+    # Hier wird das Bild geladen, welches durch den Load Button erstellt wurde
     def setImg(self, image):
         # Video in PyQt5 in other thread:
         # https://stackoverflow.com/questions/44404349/pyqt-showing-video-stream-from-opencv
         self.imgRaw = cv2.imread(FILE_NAME)
         self.previewRaw.setPixmap(QPixmap.fromImage(image).scaledToWidth(self.previewRaw.size().width()))
 
+    # Der Load-Button erstellt ein Foto und lädt dieses in die Vorschau
     def onBtnOpenClicked(self):
         try:
             self.image_thread = self.window.video_thread
