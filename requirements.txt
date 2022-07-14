@@ -1,0 +1,9 @@
+PyQt5
+tellopy
+av
+opencv-python
+numpy
+matplotlib
+imutils
+subprocess
+json
