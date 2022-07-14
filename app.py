@@ -107,6 +107,18 @@ class MainWindow(QMainWindow):
 
     # Lädt die HSV-Werte aus der json Datei
     def loadHsvValues(self):
+        if not os.path.exists('./res'):
+            os.makedirs('./res')
+        if not os.path.exists('./res/hsv.json'):
+            with open('res/hsv.json', 'w', encoding='utf-8') as f:
+                json_data = {
+                    "hsv":
+                        {
+                            "colorUpper": (99, 134, 238),
+                            "colorLower": (51, 63, 104)
+                        }
+                }
+                json.dump(json_data, f, ensure_ascii=False, indent=4)
         with open('res/hsv.json') as f:
             data = json.load(f)
             self.colorUpper = tuple(data["hsv"]["colorUpper"])
@@ -124,14 +136,14 @@ class MainWindow(QMainWindow):
         now = datetime.now()
         ts = ("%02d:%02d:%02d.%03d" % (now.hour, now.minute, now.second, now.microsecond / 1000))
         self.loggingTextBox.appendPlainText(f"{ts}: {text}")
+        self.loggingTextBox.verticalScrollBar().setValue(999999)
         self.loggingTextBox.verticalScrollBar().maximum()
-        self.loggingTextBox.verticalScrollBar().setValue(10)
 
     # Fügt eine neue Zeile mit Text im rechten Textfeld hinzu
     def addNewLogLineRight(self, text):
         self.loggingConsole.appendPlainText(text)
+        self.loggingConsole.verticalScrollBar().setValue(999999)
         self.loggingConsole.verticalScrollBar().maximum()
-        self.loggingConsole.verticalScrollBar().setValue(10)
 
     # Überprüft ob die Drohne mit dem Computer verbunden ist, auf dem das Programm ausgeführt wird
     def checkWifi(self):
